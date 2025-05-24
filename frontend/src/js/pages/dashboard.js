@@ -1,5 +1,7 @@
 import Chart from "chart.js/auto";
 import apiClient from "../apiClient";
+import "../../css/sidebar.scss";
+import "../../css/nav.scss";
 
 const token = localStorage.getItem("token");
 if (!token) location.replace("index.html");
@@ -49,3 +51,20 @@ apiClient
       options: { responsive: true },
     });
   });
+
+document.body.innerHTML =
+  `
+  <div class="navbar">
+    <div class="brand">Building Material</div>
+    <ul class="links">
+      <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
+      <li class="link-item"><a href="inventory.html">Inventory</a></li>
+      <li class="link-item"><a href="sales.html">Sales</a></li>
+      <li class="link-item"><a href="purchases.html">Purchases</a></li>
+      <li class="link-item"><a href="expenses.html">Expenses</a></li>
+      <li class="link-item"><a href="reports.html">Reports</a></li>
+      <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
+      <li class="link-item"><a href="customers.html">Customers</a></li>
+    </ul>
+  </div>
+` + document.body.innerHTML;

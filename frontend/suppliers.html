@@ -9,35 +9,69 @@
       rel="stylesheet"
       href="node_modules/bootstrap/dist/css/bootstrap.min.css"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="src/css/styles.css" />
-    <link rel="stylesheet" href="src/css/nav.scss" />
   </head>
   <body>
     <script type="module" src="src/js/auth.js"></script>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.html">BMMS</a>
-        <div>
-          <a class="nav-link d-inline" href="inventory.html">Inventory</a>
-          <a class="nav-link d-inline" href="suppliers.html">Suppliers</a>
-          <a class="nav-link d-inline" href="customers.html">Customers</a>
-          <button id="logoutBtn" class="btn btn-sm btn-outline-light">
-            Logout
-          </button>
-        </div>
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-building"></i> BuildMat</h2>
+        <p>Management System</p>
       </div>
-    </nav>
-    <nav class="navbar">
-      <div class="brand">Building Material</div>
-      <ul class="links">
-        <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
-        <li class="link-item"><a href="inventory.html">Inventory</a></li>
-        <li class="link-item"><a href="sales.html">Sales</a></li>
-        <li class="link-item"><a href="purchases.html">Purchases</a></li>
-        <li class="link-item"><a href="expenses.html">Expenses</a></li>
-        <li class="link-item"><a href="reports.html">Reports</a></li>
-        <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
-        <li class="link-item"><a href="customers.html">Customers</a></li>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="inventory.html" class="nav-link" data-page="inventory">
+            <i class="fas fa-boxes"></i>
+            Inventory
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="sales.html" class="nav-link" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            Sales
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="purchases.html" class="nav-link" data-page="purchases">
+            <i class="fas fa-shopping-cart"></i>
+            Purchases
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="expenses.html" class="nav-link" data-page="expenses">
+            <i class="fas fa-receipt"></i>
+            Expenses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <i class="fas fa-file-alt"></i>
+            Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="suppliers.html" class="nav-link" data-page="suppliers">
+            <i class="fas fa-truck"></i>
+            Suppliers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="customers.html" class="nav-link" data-page="customers">
+            <i class="fas fa-users"></i>
+            Customers
+          </a>
+        </li>
       </ul>
     </nav>
     <main class="container py-4">
@@ -60,7 +94,7 @@
     <!-- Modal with fields: name, contact_info, etc -->
     <div class="modal fade" id="supplierModal">…</div>
 
-    <script type="module" src="src/js/suppliers.js"></script>
+    <script type="module" src="src/js/pages/suppliers.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

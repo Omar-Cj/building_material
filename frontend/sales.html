@@ -1,14 +1,74 @@
-<link rel="stylesheet" href="src/css/nav.scss" />
-<nav class="navbar">
-  <div class="brand">Building Material</div>
-  <ul class="links">
-    <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
-    <li class="link-item"><a href="inventory.html">Inventory</a></li>
-    <li class="link-item"><a href="sales.html">Sales</a></li>
-    <li class="link-item"><a href="purchases.html">Purchases</a></li>
-    <li class="link-item"><a href="expenses.html">Expenses</a></li>
-    <li class="link-item"><a href="reports.html">Reports</a></li>
-    <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
-    <li class="link-item"><a href="customers.html">Customers</a></li>
-  </ul>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales - BuildMat</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="src/css/styles.css" />
+  </head>
+  <body>
+    <link rel="stylesheet" href="src/css/nav.scss" />
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-building"></i> BuildMat</h2>
+        <p>Management System</p>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="inventory.html" class="nav-link" data-page="inventory">
+            <i class="fas fa-boxes"></i>
+            Inventory
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="sales.html" class="nav-link active" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            Sales
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="purchases.html" class="nav-link" data-page="purchases">
+            <i class="fas fa-shopping-cart"></i>
+            Purchases
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="expenses.html" class="nav-link" data-page="expenses">
+            <i class="fas fa-receipt"></i>
+            Expenses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <i class="fas fa-file-alt"></i>
+            Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="suppliers.html" class="nav-link" data-page="suppliers">
+            <i class="fas fa-truck"></i>
+            Suppliers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="customers.html" class="nav-link" data-page="customers">
+            <i class="fas fa-users"></i>
+            Customers
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <script src="src/js/pages/sales.js"></script>
+  </body>
+</html>
