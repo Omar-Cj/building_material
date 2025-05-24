@@ -4,6 +4,128 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Materials – BMMS</title>
+    <style>
+      .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #495057;
+      }
+
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background: rgba(255,255,255,0.9);
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .material-info strong {
+        color: #212529;
+      }
+
+      .category-badge {
+        background: #e9ecef;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+      }
+
+      .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stock-quantity {
+        font-weight: bold;
+        min-width: 60px;
+      }
+
+      .stock-indicator {
+        flex: 1;
+        max-width: 80px;
+      }
+
+      .stock-bar {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .stock-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+      }
+
+      .good-stock { color: #28a745; }
+      .good-stock .stock-fill { background: #28a745; }
+
+      .moderate-stock { color: #ffc107; }
+      .moderate-stock .stock-fill { background: #ffc107; }
+
+      .low-stock { color: #fd7e14; }
+      .low-stock .stock-fill { background: #fd7e14; }
+
+      .out-of-stock { color: #dc3545; }
+      .out-of-stock .stock-fill { background: #dc3545; }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+      }
+
+      .reorder-level {
+        font-weight: 500;
+      }
+
+      .notification-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        min-width: 300px;
+      }
+
+      .table-responsive {
+        border-radius: 8px;
+      }
+
+      .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .btn-group .btn {
+        border-radius: 4px;
+        margin-left: 0.25rem;
+      }
+
+      .btn-group .btn:first-child {
+        margin-left: 0;
+      }
+    </style>
     <link
       rel="stylesheet"
       href="node_modules/bootstrap/dist/css/bootstrap.min.css"
@@ -15,6 +137,13 @@
   </head>
   <body>
     <script type="module" src="src/js/auth.js"></script>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -29,7 +158,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="inventory.html" class="nav-link" data-page="inventory">
+          <a href="inventory.html" class="nav-link active" data-page="inventory">
             <i class="fas fa-boxes"></i>
             Inventory
           </a>
@@ -73,111 +202,309 @@
       </ul>
     </nav>
 
-     <main class="main-content" id="mainContent">
+    <main class="main-content" id="mainContent">
       <div class="top-bar">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h1 class="page-title">Dashboard</h1>
-            </div>
-            <div class="user-actions">
-                <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
-            </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title">Inventory Management</h1>
         </div>
-      <div class="d-flex justify-content-between mb-3">
-        <h3>Materials</h3>
-        <button
-          class="btn btn-success"
-          data-bs-toggle="modal"
-          data-bs-target="#materialModal"
-        >
-          + Add
-        </button>
+        <div class="user-actions">
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
       </div>
-      <table class="table table-striped" id="materialsTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Unit</th>
-            <th>Stock</th>
-            <th>Reorder</th>
-            <th>Price</th>
-            <th>Supplier</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+
+      <!-- Statistics Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="stat-card text-center">
+            <i class="fas fa-boxes fa-2x text-primary mb-2"></i>
+            <h5>Total Materials</h5>
+            <div class="stat-value" id="totalMaterials">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card text-center">
+            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+            <h5>Low Stock</h5>
+            <div class="stat-value text-warning" id="lowStockCount">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card text-center">
+            <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+            <h5>Out of Stock</h5>
+            <div class="stat-value text-danger" id="outOfStockCount">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card text-center">
+            <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+            <h5>Total Stock Value</h5>
+            <div class="stat-value text-success" id="totalStockValue">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5><i class="fas fa-search me-2"></i>Search & Filter</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Search Materials</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="searchInput" 
+                  placeholder="Search by name, SKU, or barcode..."
+                >
+              </div>
+            </div>
+            <div class="col-md-8">
+              <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label">Category</label>
+                  <select class="form-select" id="filterCategory" name="category">
+                    <option value="">All Categories</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Stock Status</label>
+                  <select class="form-select" name="stock_status">
+                    <option value="">All Status</option>
+                    <option value="low_stock">Low Stock</option>
+                    <option value="out_of_stock">Out of Stock</option>
+                    <option value="good_stock">Good Stock</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter"></i> Apply
+                  </button>
+                  <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Materials Inventory</h4>
+        <div class="btn-group">
+          <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#materialModal">
+            <i class="fas fa-plus"></i> Add Material
+          </button>
+          <button class="btn btn-outline-primary" id="exportBtn">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <button class="btn btn-outline-secondary" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Materials Table -->
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover" id="materialsTable">
+              <thead class="table-dark">
+                <tr>
+                  <th>Material</th>
+                  <th>Category</th>
+                  <th>Unit</th>
+                  <th>Stock</th>
+                  <th>Reorder Level</th>
+                  <th>Price/Unit</th>
+                  <th>Stock Value</th>
+                  <th>Supplier</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dynamic content will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <nav aria-label="Materials pagination">
+            <ul class="pagination justify-content-center" id="pagination">
+              <!-- Pagination will be generated dynamically -->
+            </ul>
+          </nav>
+        </div>
+      </div>
     </main>
 
-    <!-- Add/Edit Modal -->
-    <div class="modal fade" id="materialModal" tabindex="-1">
-      <div class="modal-dialog">
+    <!-- Add/Edit Material Modal -->
+    <div class="modal fade" id="materialModal" tabindex="-1" aria-labelledby="materialModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
         <form id="materialForm" class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Material</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" />
+            <h5 class="modal-title" id="materialModalLabel">Add Material</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <input type="hidden" id="materialId" />
-            <div class="mb-3">
-              <label class="form-label">Name</label>
-              <input id="mName" class="form-control" required />
+            <input type="hidden" name="materialId" id="materialId" />
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="mName" class="form-label">Material Name *</label>
+                <input type="text" id="mName" name="mName" class="form-control" required />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="mSku" class="form-label">SKU</label>
+                <input type="text" id="mSku" name="mSku" class="form-control" />
+              </div>
             </div>
+
             <div class="mb-3">
-              <label>Category</label>
-              <input id="mCategory" class="form-control" required />
+              <label for="mDescription" class="form-label">Description</label>
+              <textarea id="mDescription" name="mDescription" class="form-control" rows="2"></textarea>
             </div>
-            <div class="mb-3">
-              <label>Unit</label>
-              <input id="mUnit" class="form-control" required />
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="mCategory" class="form-label">Category *</label>
+                <select id="mCategory" name="mCategory" class="form-select" required>
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="mBrand" class="form-label">Brand</label>
+                <input type="text" id="mBrand" name="mBrand" class="form-control" />
+              </div>
             </div>
-            <div class="mb-3">
-              <label>Stock</label>
-              <input id="mStock" type="number" class="form-control" required />
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="mUnit" class="form-label">Unit *</label>
+                <select id="mUnit" name="mUnit" class="form-select" required>
+                  <option value="">Select Unit</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="mStock" class="form-label">Current Stock *</label>
+                <input type="number" id="mStock" name="mStock" class="form-control" step="0.01" required />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="mReorder" class="form-label">Reorder Level *</label>
+                <input type="number" id="mReorder" name="mReorder" class="form-control" step="0.01" required />
+              </div>
             </div>
-            <div class="mb-3">
-              <label>Reorder Level</label>
-              <input
-                id="mReorder"
-                type="number"
-                class="form-control"
-                required
-              />
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="mReorderQty" class="form-label">Reorder Quantity</label>
+                <input type="number" id="mReorderQty" name="mReorderQty" class="form-control" step="0.01" />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="mPrice" class="form-label">Price per Unit *</label>
+                <input type="number" id="mPrice" name="mPrice" class="form-control" step="0.01" required />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="mCost" class="form-label">Cost per Unit</label>
+                <input type="number" id="mCost" name="mCost" class="form-control" step="0.01" />
+              </div>
             </div>
-            <div class="mb-3">
-              <label>Price</label>
-              <input
-                id="mPrice"
-                type="number"
-                step="0.01"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="mb-3">
-              <label>Supplier ID</label>
-              <input
-                id="mSupplier"
-                type="number"
-                class="form-control"
-                required
-              />
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="mSupplier" class="form-label">Main Supplier</label>
+                <input type="number" id="mSupplier" name="mSupplier" class="form-control" placeholder="Supplier ID" />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="mBarcode" class="form-label">Barcode</label>
+                <input type="text" id="mBarcode" name="mBarcode" class="form-control" />
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Save Material
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div class="modal fade" id="stockAdjustmentModal" tabindex="-1" aria-labelledby="stockAdjustmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="stockAdjustmentForm" class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="stockAdjustmentModalLabel">Adjust Stock</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="materialId" id="stockMaterialId" />
+            
+            <div class="mb-3">
+              <label class="form-label">Material</label>
+              <p class="form-control-plaintext fw-bold" id="stockMaterialName"></p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Current Stock</label>
+              <p class="form-control-plaintext" id="stockCurrentQuantity"></p>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="adjustmentType" class="form-label">Adjustment Type *</label>
+                <select id="adjustmentType" name="adjustmentType" class="form-select" required>
+                  <option value="">Select Type</option>
+                  <option value="increase">Increase Stock</option>
+                  <option value="decrease">Decrease Stock</option>
+                  <option value="set">Set Stock Level</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="quantity" class="form-label">Quantity *</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" step="0.01" required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="reason" class="form-label">Reason *</label>
+              <select id="reason" name="reason" class="form-select" required>
+                <option value="">Select Reason</option>
+                <option value="purchase">Purchase/Delivery</option>
+                <option value="sale">Sale/Usage</option>
+                <option value="damage">Damage/Loss</option>
+                <option value="return">Return</option>
+                <option value="transfer">Transfer</option>
+                <option value="count">Physical Count</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="reference" class="form-label">Reference Number</label>
+              <input type="text" id="reference" name="reference" class="form-control" placeholder="Invoice, order, or reference number" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check"></i> Adjust Stock
             </button>
           </div>
         </form>
