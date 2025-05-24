@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Materials – BMMS</title>
+    <link
+      rel="stylesheet"
+      href="node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="src/css/styles.css" />
+    <link rel="stylesheet" href="src/css/nav.scss" />
+  </head>
+  <body>
+    <script type="module" src="src/js/auth.js"></script>
+    <!-- Navbar (same on all pages) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="dashboard.html">BMMS</a>
+        <div>
+          <a class="nav-link d-inline" href="inventory.html">Inventory</a>
+          <a class="nav-link d-inline" href="suppliers.html">Suppliers</a>
+          <a class="nav-link d-inline" href="customers.html">Customers</a>
+          <button id="logoutBtn" class="btn btn-sm btn-outline-light">
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+    <nav class="navbar">
+      <div class="brand">Building Material</div>
+      <ul class="links">
+        <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
+        <li class="link-item"><a href="inventory.html">Inventory</a></li>
+        <li class="link-item"><a href="sales.html">Sales</a></li>
+        <li class="link-item"><a href="purchases.html">Purchases</a></li>
+        <li class="link-item"><a href="expenses.html">Expenses</a></li>
+        <li class="link-item"><a href="reports.html">Reports</a></li>
+        <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
+        <li class="link-item"><a href="customers.html">Customers</a></li>
+      </ul>
+    </nav>
+
+    <main class="container py-4">
+      <div class="d-flex justify-content-between mb-3">
+        <h3>Materials</h3>
+        <button
+          class="btn btn-success"
+          data-bs-toggle="modal"
+          data-bs-target="#materialModal"
+        >
+          + Add
+        </button>
+      </div>
+      <table class="table table-striped" id="materialsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Unit</th>
+            <th>Stock</th>
+            <th>Reorder</th>
+            <th>Price</th>
+            <th>Supplier</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="materialModal" tabindex="-1">
+      <div class="modal-dialog">
+        <form id="materialForm" class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Material</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" />
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="materialId" />
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input id="mName" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label>Category</label>
+              <input id="mCategory" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label>Unit</label>
+              <input id="mUnit" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label>Stock</label>
+              <input id="mStock" type="number" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label>Reorder Level</label>
+              <input
+                id="mReorder"
+                type="number"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label>Price</label>
+              <input
+                id="mPrice"
+                type="number"
+                step="0.01"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label>Supplier ID</label>
+              <input
+                id="mSupplier"
+                type="number"
+                class="form-control"
+                required
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="src/js/pages/inventory.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

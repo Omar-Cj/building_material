@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – Building Materials</title>
+  <link rel="stylesheet" href="src/css/styles.css" />
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body>
+    
+ <nav>
+    <div class="brand">Building Material</div>
+    <ul class="links">
+        <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
+        <li class="link-item"><a href="inventory.html">Inventory</a></li>
+        <li class="link-item"><a href="sales.html">Sales</a></li>
+        <li class="link-item"><a href="purchases.html">Purchases</a></li>
+        <li class="link-item"><a href="expenses.html">Expenses</a></li>
+        <li class="link-item"><a href="reports.html">Reports</a></li>
+        <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
+        <li class="link-item"><a href="customers.html">Customers</a></li>
+    </ul>
+ </nav>
+
+  <main class="container py-4">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title">Inventory Value</h5>
+            <p id="inventoryValue" class="display-6">–</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <canvas id="topSellingChart"></canvas>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-4">
+      <div class="col-12">
+        <canvas id="monthlySummaryChart"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="src/js/pages/dashboard.js"></script>
+</body>
+</html>

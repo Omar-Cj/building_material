@@ -1,0 +1,50 @@
+<!-- purchases.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    …
+  </head>
+  <body>
+    <script type="module" src="src/js/auth.js"></script>
+    <link rel="stylesheet" href="src/css/nav.scss" />
+    <nav class="navbar">
+      <div class="brand">Building Material</div>
+      <ul class="links">
+        <li class="link-item"><a href="dashboard.html">Dashboard</a></li>
+        <li class="link-item"><a href="inventory.html">Inventory</a></li>
+        <li class="link-item"><a href="sales.html">Sales</a></li>
+        <li class="link-item"><a href="purchases.html">Purchases</a></li>
+        <li class="link-item"><a href="expenses.html">Expenses</a></li>
+        <li class="link-item"><a href="reports.html">Reports</a></li>
+        <li class="link-item"><a href="suppliers.html">Suppliers</a></li>
+        <li class="link-item"><a href="customers.html">Customers</a></li>
+      </ul>
+    </nav>
+    <main class="container py-4">
+      <h3>Create Purchase Order</h3>
+      <form id="poForm">
+        <div class="mb-3">
+          <label>Supplier</label>
+          <select id="poSupplier" class="form-select"></select>
+        </div>
+        <table class="table" id="poItems">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button id="addRow" class="btn btn-sm btn-outline-secondary">
+          + Item
+        </button>
+        <button type="submit" class="btn btn-primary">Submit PO</button>
+      </form>
+    </main>
+    <script type="module" src="src/js/purchases.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
