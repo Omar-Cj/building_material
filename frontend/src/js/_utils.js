@@ -11,7 +11,7 @@ export function handleLogout() {
 export async function authFetch(url, opts={}) {
   const token = localStorage.getItem('token');
   const headers = opts.headers || {};
-  headers['Authorization'] = `Bearer ${token}`;
+  headers['Authorization'] = `JWT ${token}`;
   opts.headers = headers;
   const res = await fetch(url, opts);
   if (res.status === 401) {
