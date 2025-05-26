@@ -1,0 +1,120 @@
+.stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #495057;
+      }
+
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background: rgba(255,255,255,0.9);
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+
+      .material-info strong {
+        color: #212529;
+      }
+
+      .category-badge {
+        background: #e9ecef;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+      }
+
+      .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stock-quantity {
+        font-weight: bold;
+        min-width: 60px;
+      }
+
+      .stock-indicator {
+        flex: 1;
+        max-width: 80px;
+      }
+
+      .stock-bar {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .stock-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+      }
+
+      .good-stock { color: #28a745; }
+      .good-stock .stock-fill { background: #28a745; }
+
+      .moderate-stock { color: #ffc107; }
+      .moderate-stock .stock-fill { background: #ffc107; }
+
+      .low-stock { color: #fd7e14; }
+      .low-stock .stock-fill { background: #fd7e14; }
+
+      .out-of-stock { color: #dc3545; }
+      .out-of-stock .stock-fill { background: #dc3545; }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+      }
+
+      .reorder-level {
+        font-weight: 500;
+      }
+
+      .notification-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        min-width: 300px;
+      }
+
+      .table-responsive {
+        border-radius: 8px;
+      }
+
+      .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .btn-group .btn {
+        border-radius: 4px;
+        margin-left: 0.25rem;
+      }
+
+      .btn-group .btn:first-child {
+        margin-left: 0;
+      }

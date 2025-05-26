@@ -13,62 +13,9 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="src/css/styles.css" />
-    <style>
-      .supplier-avatar {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-      }
-      
-      .table th {
-        border-top: none;
-        font-weight: 600;
-        color: #2c3e50;
-      }
-      
-      .btn-group-sm .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-      }
-      
-      .modal-header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-      }
-      
-      .modal-header .btn-close {
-        filter: invert(1);
-      }
-      
-      .form-label {
-        font-weight: 600;
-        color: #2c3e50;
-      }
-      
-      .required::after {
-        content: " *";
-        color: #e74c3c;
-      }
-      
-      .pagination .page-link {
-        color: #667eea;
-      }
-      
-      .pagination .page-item.active .page-link {
-        background-color: #667eea;
-        border-color: #667eea;
-      }
-    </style>
+    <link rel="stylesheet" href="src/css/suppliers.css" />
   </head>
-  <body>
-    <script type="module" src="src/js/auth.js"></script>
-    
+  <body>    
     <!-- Sidebar Navigation -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -356,11 +303,9 @@
         </div>
       </div>
     </div>
-
-    
-
     <!-- Scripts -->
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="src/js/pages/suppliers.js"></script>
+    <script type="module" src="src/js/auth.js"></script>
   </body>
 </html>

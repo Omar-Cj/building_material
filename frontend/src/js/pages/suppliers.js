@@ -203,8 +203,8 @@ class SuppliersManager {
                     </div>
                 </td>
                 <td>${this.escapeHtml(supplier.contact_person || '-')}</td>
-                <td>${supplier.email ? `<a href="mailto:${supplier.email}">${this.escapeHtml(supplier.email)}</a>` : '-'}</td>
-                <td>${supplier.phone ? `<a href="tel:${supplier.phone}">${this.escapeHtml(supplier.phone)}</a>` : '-'}</td>
+                <td>${supplier.email}</td>
+                <td>${supplier.phone}</td>
                 <td>${this.escapeHtml(supplier.city || '-')}</td>
                 <td>
                     <span class="badge ${supplier.is_active ? 'bg-success' : 'bg-danger'}">
