@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sales - BuildMat</title>
     <link
-      rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
-    <link rel="stylesheet" href="src/css/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="src/css/purchases.css" />
   </head>
   <body>
-    <link rel="stylesheet" href="src/css/nav.scss" />
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2><i class="fas fa-building"></i> BuildMat</h2>
@@ -38,7 +40,11 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="purchases.html" class="nav-link" data-page="purchases">
+          <a
+            href="purchases.html"
+            class="nav-link"
+            data-page="purchases"
+          >
             <i class="fas fa-shopping-cart"></i>
             Purchases
           </a>
@@ -69,6 +75,25 @@
         </li>
       </ul>
     </nav>
-    <script src="src/js/pages/sales.js"></script>
+
+    <main class="main-content" id="mainContent">
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 15px">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title">Sales Management</h1>
+        </div>
+        <div class="user-actions">
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </main>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="src/js/pages/sales.js" type="module"></script>
+    <script src="src/js/auth.js" type="module"></script>
   </body>
 </html>
