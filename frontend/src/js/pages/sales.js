@@ -152,7 +152,7 @@ class SalesManager {
                             <option value="">All Payment Methods</option>
                             <option value="cash">Cash</option>
                             <option value="zaad">Zaad</option>
-                            <option value="edahab">Check</option>
+                            <option value="edahab">Edahab</option>
                         </select>
                     </div>
 

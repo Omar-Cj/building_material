@@ -13,7 +13,7 @@ class Sale(models.Model):
     PAYMENT_METHOD_CHOICES = [
         (CASH, _('Cash')),
         (ZAAD, _('Zaad')),
-        (EDAHAB, _('Check')),
+        (EDAHAB, _('Edahab')),
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='sales')
