@@ -1,394 +1,592 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Materials – BMMS</title>
-    <link
-      rel="stylesheet"
-      href="node_modules/bootstrap/dist/css/bootstrap.min.css"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - BuildMat</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="src/css/styles.css" />
-    <link rel="stylesheet" href="src/css/inventory.css" />
-  </head>
-  <body>
-    <script type="module" src="src/js/auth.js"></script>
-
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="src/css/inventory.css">
+</head>
+<body>
     <nav class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2><i class="fas fa-building"></i> BuildMat</h2>
-        <p>Management System</p>
-      </div>
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="dashboard.html" class="nav-link" data-page="dashboard">
-            <i class="fas fa-tachometer-alt"></i>
-            Dashboard
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="inventory.html" class="nav-link active" data-page="inventory">
-            <i class="fas fa-boxes"></i>
-            Inventory
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="sales.html" class="nav-link" data-page="sales">
-            <i class="fas fa-chart-line"></i>
-            Sales
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="purchases.html" class="nav-link" data-page="purchases">
-            <i class="fas fa-shopping-cart"></i>
-            Purchases
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="expenses.html" class="nav-link" data-page="expenses">
-            <i class="fas fa-receipt"></i>
-            Expenses
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="reports.html" class="nav-link" data-page="reports">
-            <i class="fas fa-file-alt"></i>
-            Reports
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="suppliers.html" class="nav-link" data-page="suppliers">
-            <i class="fas fa-truck"></i>
-            Suppliers
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="customers.html" class="nav-link" data-page="customers">
-            <i class="fas fa-users"></i>
-            Customers
-          </a>
-        </li>
-      </ul>
+        <div class="sidebar-header">
+            <h2><i class="fas fa-building"></i> BuildMat</h2>
+            <p>Management System</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link active" data-page="inventory">
+                    <i class="fas fa-boxes"></i>
+                    Inventory
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="sales.html" class="nav-link" data-page="sales">
+                    <i class="fas fa-chart-line"></i>
+                    Sales
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="purchases.html" class="nav-link" data-page="purchases">
+                    <i class="fas fa-shopping-cart"></i>
+                    Purchases
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="expenses.html" class="nav-link" data-page="expenses">
+                    <i class="fas fa-receipt"></i>
+                    Expenses
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="suppliers.html" class="nav-link" data-page="suppliers">
+                    <i class="fas fa-truck"></i>
+                    Suppliers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="customers.html" class="nav-link" data-page="customers">
+                    <i class="fas fa-users"></i>
+                    Customers
+                </a>
+            </li>
+        </ul>
     </nav>
 
     <main class="main-content" id="mainContent">
-      <div class="top-bar">
-        <div style="display: flex; align-items: center; gap: 15px;">
-          <button class="menu-toggle" id="menuToggle">
-            <i class="fas fa-bars"></i>
-          </button>
-          <h1 class="page-title">Inventory Management</h1>
-        </div>
-        <div class="user-actions">
-          <button class="logout-btn" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i>
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <!-- Statistics Cards -->
-      <div class="row mb-4">
-        <div class="col-md-3">
-          <div class="stat-card text-center">
-            <i class="fas fa-boxes fa-2x text-primary mb-2"></i>
-            <h5>Total Materials</h5>
-            <div class="stat-value" id="totalMaterials">0</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="stat-card text-center">
-            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
-            <h5>Low Stock</h5>
-            <div class="stat-value text-warning" id="lowStockCount">0</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="stat-card text-center">
-            <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
-            <h5>Out of Stock</h5>
-            <div class="stat-value text-danger" id="outOfStockCount">0</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="stat-card text-center">
-            <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-            <h5>Total Stock Value</h5>
-            <div class="stat-value text-success" id="totalStockValue">$0.00</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search and Filter Section -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5><i class="fas fa-search me-2"></i>Search & Filter</h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-4 mb-3">
-              <label class="form-label">Search Materials</label>
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="fas fa-search"></i>
-                </span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="searchInput" 
-                  placeholder="Search by name, SKU, or barcode..."
-                >
-              </div>
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">Inventory Management</h1>
             </div>
-            <div class="col-md-8">
-              <form id="filterForm" class="row g-3">
-                <div class="col-md-3">
-                  <label class="form-label">Category</label>
-                  <select class="form-select" id="filterCategory" name="category">
-                    <option value="">All Categories</option>
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Stock Status</label>
-                  <select class="form-select" name="stock_status">
-                    <option value="">All Status</option>
-                    <option value="low_stock">Low Stock</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                    <option value="good_stock">Good Stock</option>
-                  </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                  <button type="submit" class="btn btn-primary me-2">
-                    <i class="fas fa-filter"></i> Apply
-                  </button>
-                  <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i> Clear
-                  </button>
-                </div>
-              </form>
+            <div class="user-actions">
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
             </div>
-          </div>
         </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Materials Inventory</h4>
-        <div class="btn-group">
-          <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#materialModal">
-            <i class="fas fa-plus"></i> Add Material
-          </button>
-          <button class="btn btn-outline-primary" id="exportBtn">
-            <i class="fas fa-download"></i> Export
-          </button>
-          <button class="btn btn-outline-secondary" id="refreshBtn">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="total-materials">0</h3>
+                    <p>Total Materials</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stock-value">$0</h3>
+                    <p>Stock Value</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="low-stock-count">0</h3>
+                    <p>Low Stock Items</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="categories-count">0</h3>
+                    <p>Categories</p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- Materials Table -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover" id="materialsTable">
-              <thead class="table-dark">
-                <tr>
-                  <th>Material</th>
-                  <th>Category</th>
-                  <th>Unit</th>
-                  <th>Stock</th>
-                  <th>Reorder Level</th>
-                  <th>Price/Unit</th>
-                  <th>Stock Value</th>
-                  <th>Supplier</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Dynamic content will be loaded here -->
-              </tbody>
-            </table>
-          </div>
+        <!-- Tabs -->
+        <div class="content-card">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="materials">
+                    <i class="fas fa-boxes mr-2"></i>Materials
+                </button>
+                <button class="tab-btn" data-tab="categories">
+                    <i class="fas fa-tags mr-2"></i>Categories
+                </button>
+                <button class="tab-btn" data-tab="units">
+                    <i class="fas fa-ruler mr-2"></i>Units
+                </button>
+                <button class="tab-btn" data-tab="adjustments">
+                    <i class="fas fa-edit mr-2"></i>Adjustments
+                </button>
+            </div>
 
-          <!-- Pagination -->
-          <nav aria-label="Materials pagination">
-            <ul class="pagination justify-content-center" id="pagination">
-              <!-- Pagination will be generated dynamically -->
-            </ul>
-          </nav>
+            <!-- Materials Tab -->
+            <div class="tab-content active" id="materials-tab">
+                <div class="card-header">
+                    <h3 class="card-title">Materials Inventory</h3>
+                    <button class="btn btn-primary" id="add-material-btn">
+                        <i class="fas fa-plus"></i>
+                        Add Material
+                    </button>
+                </div>
+
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="materials-search" placeholder="Search materials...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Category</label>
+                        <select class="form-select" id="category-filter">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Stock Status</label>
+                        <select class="form-select" id="stock-filter">
+                            <option value="">All Items</option>
+                            <option value="low">Low Stock</option>
+                            <option value="normal">Normal Stock</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-warning" id="low-stock-btn">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Low Stock
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>SKU</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Unit Price</th>
+                                <th>Stock Value</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materials-table-body">
+                            <!-- Materials will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-controls">
+                    <div>
+                        Showing <span id="materials-showing">1-10</span> of <span id="materials-total">0</span> materials
+                    </div>
+                    <div class="pagination" id="materials-pagination">
+                        <!-- Pagination buttons will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div class="tab-content" id="categories-tab">
+                <div class="card-header">
+                    <h3 class="card-title">Categories</h3>
+                    <button class="btn btn-primary" id="add-category-btn">
+                        <i class="fas fa-plus"></i>
+                        Add Category
+                    </button>
+                </div>
+
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="categories-search" placeholder="Search categories...">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Parent Category</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-table-body">
+                            <!-- Categories will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Units Tab -->
+            <div class="tab-content" id="units-tab">
+                <div class="card-header">
+                    <h3 class="card-title">Units of Measure</h3>
+                    <button class="btn btn-primary" id="add-unit-btn">
+                        <i class="fas fa-plus"></i>
+                        Add Unit
+                    </button>
+                </div>
+
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="units-search" placeholder="Search units...">
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Abbreviation</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="units-table-body">
+                            <!-- Units will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock Adjustments Tab -->
+            <div class="tab-content" id="adjustments-tab">
+                <div class="card-header">
+                    <h3 class="card-title">Stock Adjustments</h3>
+                    <button class="btn btn-primary" id="add-adjustment-btn">
+                        <i class="fas fa-plus"></i>
+                        New Adjustment
+                    </button>
+                </div>
+
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="adjustments-search" placeholder="Search adjustments...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Type</label>
+                        <select class="form-select" id="adjustment-type-filter">
+                            <option value="">All Types</option>
+                            <option value="incoming">Incoming</option>
+                            <option value="outgoing">Outgoing</option>
+                            <option value="loss">Loss/Damage</option>
+                            <option value="return">Return</option>
+                            <option value="correction">Correction</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Date Range</label>
+                        <select class="form-select" id="date-filter">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <div></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Material</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Reason</th>
+                                <th>Performed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adjustments-table-body">
+                            <!-- Adjustments will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-controls">
+                    <div>
+                        Showing <span id="adjustments-showing">1-10</span> of <span id="adjustments-total">0</span> adjustments
+                    </div>
+                    <div class="pagination" id="adjustments-pagination">
+                        <!-- Pagination buttons will be generated here -->
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </main>
 
-    <!-- Add/Edit Material Modal -->
-    <div class="modal fade" id="materialModal" tabindex="-1" aria-labelledby="materialModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <form id="materialForm" class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="materialModalLabel">Add Material</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" name="materialId" id="materialId" />
-            
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="mName" class="form-label">Material Name *</label>
-                <input type="text" id="mName" name="mName" class="form-control" required />
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="mSku" class="form-label">SKU</label>
-                <input type="text" id="mSku" name="mSku" class="form-control" />
-              </div>
+    <!-- Material Modal -->
+    <div class="modal" id="material-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="material-modal-title">Add Material</h3>
+                <button class="close-btn" type="button" id="close-material-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            <div class="modal-body">
+                <form id="material-form">
+                    <div class="modal-form-grid">
+                        <div class="form-group">
+                            <label class="form-label required">Material Name</label>
+                            <input type="text" class="form-control" id="material-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">SKU</label>
+                            <input type="text" class="form-control" id="material-sku" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group modal-form-full">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="material-description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="modal-form-grid">
+                        <div class="form-group">
+                            <label class="form-label required">Category</label>
+                            <select class="form-control" id="material-category" required>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Unit</label>
+                            <select class="form-control" id="material-unit" required>
+                                <option value="">Select Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="material-brand">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Barcode</label>
+                            <input type="text" class="form-control" id="material-barcode">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-form-grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Initial Stock</label>
+                            <input type="number" class="form-control" id="material-stock" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reorder Level</label>
+                            <input type="number" class="form-control" id="material-reorder-level" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reorder Quantity</label>
+                            <input type="number" class="form-control" id="material-reorder-qty" step="0.01" min="0" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-form-grid">
+                        <div class="form-group">
+                            <label class="form-label required">Cost per Unit</label>
+                            <input type="number" class="form-control" id="material-cost" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Price per Unit</label>
+                            <input type="number" class="form-control" id="material-price" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-material">Cancel</button>
+                <button type="submit" form="material-form" class="btn btn-primary">Save Material</button>
+            </div>
+        </div>
+    </div>
 
-            <div class="mb-3">
-              <label for="mDescription" class="form-label">Description</label>
-              <textarea id="mDescription" name="mDescription" class="form-control" rows="2"></textarea>
+    <!-- Category Modal -->
+    <div class="modal" id="category-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="category-modal-title">Add Category</h3>
+                <button class="close-btn" type="button" id="close-category-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            <div class="modal-body">
+                <form id="category-form">
+                    <div class="form-group">
+                        <label class="form-label required">Category Name</label>
+                        <input type="text" class="form-control" id="category-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="category-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Parent Category</label>
+                        <select class="form-control" id="category-parent">
+                            <option value="">None (Root Category)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-category">Cancel</button>
+                <button type="submit" form="category-form" class="btn btn-primary">Save Category</button>
+            </div>
+        </div>
+    </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="mCategory" class="form-label">Category *</label>
-                <select id="mCategory" name="mCategory" class="form-select" required>
-                  <option value="">Select Category</option>
-                </select>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="mBrand" class="form-label">Brand</label>
-                <input type="text" id="mBrand" name="mBrand" class="form-control" />
-              </div>
+    <!-- Unit Modal -->
+    <div class="modal" id="unit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="unit-modal-title">Add Unit</h3>
+                <button class="close-btn" type="button" id="close-unit-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label for="mUnit" class="form-label">Unit *</label>
-                <select id="mUnit" name="mUnit" class="form-select" required>
-                  <option value="">Select Unit</option>
-                </select>
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="mStock" class="form-label">Current Stock *</label>
-                <input type="number" id="mStock" name="mStock" class="form-control" step="0.01" required />
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="mReorder" class="form-label">Reorder Level *</label>
-                <input type="number" id="mReorder" name="mReorder" class="form-control" step="0.01" required />
-              </div>
+            <div class="modal-body">
+                <form id="unit-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label required">Unit Name</label>
+                                <input type="text" class="form-control" id="unit-name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label required">Abbreviation</label>
+                                <input type="text" class="form-control" id="unit-abbreviation" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="unit-description" rows="3"></textarea>
+                    </div>
+                </form>
             </div>
-
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label for="mReorderQty" class="form-label">Reorder Quantity</label>
-                <input type="number" id="mReorderQty" name="mReorderQty" class="form-control" step="0.01" />
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="mPrice" class="form-label">Price per Unit *</label>
-                <input type="number" id="mPrice" name="mPrice" class="form-control" step="0.01" required />
-              </div>
-              <div class="col-md-4 mb-3">
-                <label for="mCost" class="form-label">Cost per Unit</label>
-                <input type="number" id="mCost" name="mCost" class="form-control" step="0.01" />
-              </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-unit">Cancel</button>
+                <button type="submit" form="unit-form" class="btn btn-primary">Save Unit</button>
             </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="mSupplier" class="form-label">Main Supplier</label>
-                <input type="number" id="mSupplier" name="mSupplier" class="form-control" placeholder="Supplier ID" />
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="mBarcode" class="form-label">Barcode</label>
-                <input type="text" id="mBarcode" name="mBarcode" class="form-control" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save"></i> Save Material
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
     </div>
 
     <!-- Stock Adjustment Modal -->
-    <div class="modal fade" id="stockAdjustmentModal" tabindex="-1" aria-labelledby="stockAdjustmentModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <form id="stockAdjustmentForm" class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="stockAdjustmentModalLabel">Adjust Stock</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" name="materialId" id="stockMaterialId" />
-            
-            <div class="mb-3">
-              <label class="form-label">Material</label>
-              <p class="form-control-plaintext fw-bold" id="stockMaterialName"></p>
+    <div class="modal" id="adjustment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="adjustment-modal-title">Stock Adjustment</h3>
+                <button class="close-btn" type="button" id="close-adjustment-modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label">Current Stock</label>
-              <p class="form-control-plaintext" id="stockCurrentQuantity"></p>
+            <div class="modal-body">
+                <form id="adjustment-form">
+                    <div class="form-group modal-form-full">
+                        <label class="form-label required">Material</label>
+                        <select class="form-control" id="adjustment-material" required>
+                            <option value="">Select Material</option>
+                        </select>
+                    </div>
+                    <div class="modal-form-grid">
+                        <div class="form-group">
+                            <label class="form-label required">Adjustment Type</label>
+                            <select class="form-control" id="adjustment-type" required>
+                                <option value="">Select Type</option>
+                                <option value="incoming">Incoming</option>
+                                <option value="outgoing">Outgoing</option>
+                                <option value="loss">Loss/Damage</option>
+                                <option value="return">Return</option>
+                                <option value="correction">Correction</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Quantity</label>
+                            <input type="number" class="form-control" id="adjustment-quantity" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group modal-form-full">
+                        <label class="form-label required">Reason</label>
+                        <textarea class="form-control" id="adjustment-reason" rows="2" required></textarea>
+                    </div>
+                    <div class="form-group modal-form-full">
+                        <label class="form-label">Reference</label>
+                        <input type="text" class="form-control" id="adjustment-reference" placeholder="Optional reference number">
+                    </div>
+                </form>
             </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="adjustmentType" class="form-label">Adjustment Type *</label>
-                <select id="adjustmentType" name="adjustmentType" class="form-select" required>
-                  <option value="">Select Type</option>
-                  <option value="increase">Increase Stock</option>
-                  <option value="decrease">Decrease Stock</option>
-                  <option value="set">Set Stock Level</option>
-                </select>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="quantity" class="form-label">Quantity *</label>
-                <input type="number" id="quantity" name="quantity" class="form-control" step="0.01" required />
-              </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-adjustment">Cancel</button>
+                <button type="submit" form="adjustment-form" class="btn btn-primary">Save Adjustment</button>
             </div>
-
-            <div class="mb-3">
-              <label for="reason" class="form-label">Reason *</label>
-              <select id="reason" name="reason" class="form-select" required>
-                <option value="">Select Reason</option>
-                <option value="purchase">Purchase/Delivery</option>
-                <option value="sale">Sale/Usage</option>
-                <option value="damage">Damage/Loss</option>
-                <option value="return">Return</option>
-                <option value="transfer">Transfer</option>
-                <option value="count">Physical Count</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="reference" class="form-label">Reference Number</label>
-              <input type="text" id="reference" name="reference" class="form-control" placeholder="Invoice, order, or reference number" />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-check"></i> Adjust Stock
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
     </div>
 
-    <script type="module" src="src/js/pages/inventory.js"></script>
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Action</h3>
+                <button class="close-btn" type="button" id="close-confirm-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to proceed?</p>
+                <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="confirm-yes">
+                        <i class="fas fa-check"></i>
+                        Yes
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="confirm-no">
+                        <i class="fas fa-times"></i>
+                        No
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script src="src/js/pages/inventory.js" type="module"></script>
+    <script src="src/js/auth.js" type="module"></script>
+</body>
 </html>
