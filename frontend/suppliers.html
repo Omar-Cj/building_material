@@ -15,11 +15,11 @@
     <link rel="stylesheet" href="src/css/styles.css" />
     <link rel="stylesheet" href="src/css/suppliers.css" />
   </head>
-  <body>    
+  <body>
     <!-- Sidebar Navigation -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2><i class="fas fa-building"></i> BuildMat</h2>
+        <h2><i class="fas fa-building"></i> NurBuild</h2>
         <p>Management System</p>
       </div>
       <ul class="nav-menu">
@@ -60,7 +60,11 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="suppliers.html" class="nav-link active" data-page="suppliers">
+          <a
+            href="suppliers.html"
+            class="nav-link active"
+            data-page="suppliers"
+          >
             <i class="fas fa-truck"></i>
             Suppliers
           </a>
@@ -76,8 +80,8 @@
 
     <!-- Main Content -->
     <main class="main-content">
-          <div class="top-bar">
-        <div style="display: flex; align-items: center; gap: 15px;">
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 15px">
           <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
           </button>
@@ -97,21 +101,33 @@
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h3 class="chart-title mb-1">Suppliers Directory</h3>
-              <p class="text-muted mb-0">Manage your supplier relationships and contact information</p>
+              <p class="text-muted mb-0">
+                Manage your supplier relationships and contact information
+              </p>
             </div>
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#supplierModal">
+              <button
+                class="btn btn-sm btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#supplierModal"
+              >
                 <i class="fas fa-plus"></i> Add Supplier
               </button>
-              <button class="btn btn-outline-primary btn-sm" onclick="exportSuppliers()">
+              <button
+                class="btn btn-outline-primary btn-sm"
+                onclick="exportSuppliers()"
+              >
                 <i class="fas fa-download"></i> Export
               </button>
-              <button class="btn btn-outline-info btn-sm" onclick="importSuppliers()">
+              <button
+                class="btn btn-outline-info btn-sm"
+                onclick="importSuppliers()"
+              >
                 <i class="fas fa-upload"></i> Import
               </button>
             </div>
           </div>
-          
+
           <!-- Dynamic table container -->
           <div id="suppliersTableContainer">
             <!-- Table will be rendered here by JavaScript -->
@@ -121,7 +137,13 @@
     </main>
 
     <!-- Add/Edit Supplier Modal -->
-    <div class="modal fade" id="supplierModal" tabindex="-1" aria-labelledby="supplierModalLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="supplierModal"
+      tabindex="-1"
+      aria-labelledby="supplierModalLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
@@ -129,7 +151,12 @@
               <i class="fas fa-truck me-2"></i>
               Add New Supplier
             </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
           <form id="supplierForm" novalidate>
             <div class="modal-body">
@@ -140,100 +167,191 @@
                     <i class="fas fa-info-circle me-1"></i>
                     Basic Information
                   </h6>
-                  
+
                   <div class="mb-3">
-                    <label for="name" class="form-label required">Supplier Name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                    <div class="invalid-feedback">Please provide a supplier name.</div>
+                    <label for="name" class="form-label required"
+                      >Supplier Name</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      name="name"
+                      required
+                    />
+                    <div class="invalid-feedback">
+                      Please provide a supplier name.
+                    </div>
                   </div>
-                  
+
                   <div class="mb-3">
-                    <label for="contact_person" class="form-label">Contact Person</label>
-                    <input type="text" class="form-control" id="contact_person" name="contact_person">
+                    <label for="contact_person" class="form-label"
+                      >Contact Person</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="contact_person"
+                      name="contact_person"
+                    />
                   </div>
-                  
+
                   <div class="row">
                     <div class="col-md-6">
                       <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                        <div class="invalid-feedback">Please provide a valid email address.</div>
+                        <input
+                          type="email"
+                          class="form-control"
+                          id="email"
+                          name="email"
+                        />
+                        <div class="invalid-feedback">
+                          Please provide a valid email address.
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="mb-3">
                         <label for="website" class="form-label">Website</label>
-                        <input type="url" class="form-control" id="website" name="website" placeholder="https://">
+                        <input
+                          type="url"
+                          class="form-control"
+                          id="website"
+                          name="website"
+                          placeholder="https://"
+                        />
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="row">
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="phone" class="form-label required">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" required>
-                        <div class="invalid-feedback">Please provide a phone number.</div>
+                        <label for="phone" class="form-label required"
+                          >Phone</label
+                        >
+                        <input
+                          type="tel"
+                          class="form-control"
+                          id="phone"
+                          name="phone"
+                          required
+                        />
+                        <div class="invalid-feedback">
+                          Please provide a phone number.
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="alternative_phone" class="form-label">Alternative Phone</label>
-                        <input type="tel" class="form-control" id="alternative_phone" name="alternative_phone">
+                        <label for="alternative_phone" class="form-label"
+                          >Alternative Phone</label
+                        >
+                        <input
+                          type="tel"
+                          class="form-control"
+                          id="alternative_phone"
+                          name="alternative_phone"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Address Information -->
                 <div class="col-md-6">
                   <h6 class="fw-bold mb-3 text-primary">
                     <i class="fas fa-map-marker-alt me-1"></i>
                     Address Information
                   </h6>
-                  
+
                   <div class="mb-3">
-                    <label for="address" class="form-label required">Street Address</label>
-                    <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
-                    <div class="invalid-feedback">Please provide an address.</div>
+                    <label for="address" class="form-label required"
+                      >Street Address</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="address"
+                      name="address"
+                      rows="2"
+                      required
+                    ></textarea>
+                    <div class="invalid-feedback">
+                      Please provide an address.
+                    </div>
                   </div>
-                  
+
                   <div class="row">
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="city" class="form-label required">City</label>
-                        <input type="text" class="form-control" id="city" name="city" required>
-                        <div class="invalid-feedback">Please provide a city.</div>
+                        <label for="city" class="form-label required"
+                          >City</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="city"
+                          name="city"
+                          required
+                        />
+                        <div class="invalid-feedback">
+                          Please provide a city.
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="state" class="form-label">State/Province</label>
-                        <input type="text" class="form-control" id="state" name="state">
+                        <label for="state" class="form-label"
+                          >State/Province</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="state"
+                          name="state"
+                        />
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="row">
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="postal_code" class="form-label">Postal Code</label>
-                        <input type="text" class="form-control" id="postal_code" name="postal_code">
+                        <label for="postal_code" class="form-label"
+                          >Postal Code</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="postal_code"
+                          name="postal_code"
+                        />
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="mb-3">
-                        <label for="country" class="form-label required">Country</label>
-                        <input type="text" class="form-control" id="country" name="country" required>
-                        <div class="invalid-feedback">Please provide a country.</div>
+                        <label for="country" class="form-label required"
+                          >Country</label
+                        >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="country"
+                          name="country"
+                          required
+                        />
+                        <div class="invalid-feedback">
+                          Please provide a country.
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              <hr class="my-4">
-              
+
+              <hr class="my-4" />
+
               <div class="row">
                 <!-- Business Information -->
                 <div class="col-md-6">
@@ -241,15 +359,26 @@
                     <i class="fas fa-briefcase me-1"></i>
                     Business Information
                   </h6>
-                  
+
                   <div class="mb-3">
                     <label for="tax_id" class="form-label">Tax ID</label>
-                    <input type="text" class="form-control" id="tax_id" name="tax_id">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="tax_id"
+                      name="tax_id"
+                    />
                   </div>
-                  
+
                   <div class="mb-3">
-                    <label for="payment_terms" class="form-label">Payment Terms</label>
-                    <select class="form-select" id="payment_terms" name="payment_terms">
+                    <label for="payment_terms" class="form-label"
+                      >Payment Terms</label
+                    >
+                    <select
+                      class="form-select"
+                      id="payment_terms"
+                      name="payment_terms"
+                    >
                       <option value="">Select payment terms</option>
                       <option value="Cash on Delivery">Cash on Delivery</option>
                       <option value="Net 15">Net 15 days</option>
@@ -260,39 +389,65 @@
                       <option value="Custom">Custom Terms</option>
                     </select>
                   </div>
-                  
+
                   <div class="mb-3">
-                    <label for="credit_limit" class="form-label">Credit Limit ($)</label>
-                    <input type="number" class="form-control" id="credit_limit" name="credit_limit" min="0" step="0.01" placeholder="0.00">
+                    <label for="credit_limit" class="form-label"
+                      >Credit Limit ($)</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="credit_limit"
+                      name="credit_limit"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                    />
                   </div>
-                  
+
                   <div class="mb-3">
                     <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="is_active"
+                        name="is_active"
+                        checked
+                      />
                       <label class="form-check-label" for="is_active">
                         Active Supplier
                       </label>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Additional Information -->
                 <div class="col-md-6">
                   <h6 class="fw-bold mb-3 text-primary">
                     <i class="fas fa-sticky-note me-1"></i>
                     Additional Information
                   </h6>
-                  
+
                   <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="6" placeholder="Add any additional notes about this supplier..."></textarea>
+                    <textarea
+                      class="form-control"
+                      id="notes"
+                      name="notes"
+                      rows="6"
+                      placeholder="Add any additional notes about this supplier..."
+                    ></textarea>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
                 <i class="fas fa-times"></i> Cancel
               </button>
               <button type="submit" class="btn btn-primary">

@@ -1,290 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reports - BuildMat</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="src/css/reports.css" />
-</head>
-<body>
+  </head>
+  <body>
     <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2><i class="fas fa-building"></i> BuildMat</h2>
-            <p>Management System</p>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="dashboard.html" class="nav-link">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="inventory.html" class="nav-link">
-                    <i class="fas fa-boxes"></i>
-                    Inventory
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="sales.html" class="nav-link">
-                    <i class="fas fa-chart-line"></i>
-                    Sales
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="purchases.html" class="nav-link">
-                    <i class="fas fa-shopping-cart"></i>
-                    Purchases
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="expenses.html" class="nav-link">
-                    <i class="fas fa-receipt"></i>
-                    Expenses
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="reports.html" class="nav-link active">
-                    <i class="fas fa-file-alt"></i>
-                    Reports
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="suppliers.html" class="nav-link">
-                    <i class="fas fa-truck"></i>
-                    Suppliers
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="customers.html" class="nav-link">
-                    <i class="fas fa-users"></i>
-                    Customers
-                </a>
-            </li>
-        </ul>
+      <div class="sidebar-header">
+        <h2><i class="fas fa-building"></i> NurBuild</h2>
+        <p>Management System</p>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="inventory.html" class="nav-link">
+            <i class="fas fa-boxes"></i>
+            Inventory
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="sales.html" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            Sales
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="purchases.html" class="nav-link">
+            <i class="fas fa-shopping-cart"></i>
+            Purchases
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="expenses.html" class="nav-link">
+            <i class="fas fa-receipt"></i>
+            Expenses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link active">
+            <i class="fas fa-file-alt"></i>
+            Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="suppliers.html" class="nav-link">
+            <i class="fas fa-truck"></i>
+            Suppliers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="customers.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            Customers
+          </a>
+        </li>
+      </ul>
     </nav>
 
     <main class="main-content" id="mainContent">
-        <div class="top-bar">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="btn btn-primary" id="menuToggle">
-                    <i class="fas fa-bars"></i>
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 15px">
+          <button class="btn btn-primary" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title">Report Management</h1>
+        </div>
+        <div class="user-actions">
+          <button class="btn btn-danger" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Sales & Purchase Summary -->
+      <div class="content-card">
+        <div class="report-section">
+          <div class="report-header">
+            <h2 class="report-title">
+              <i class="fas fa-chart-bar"></i>
+              Sales & Purchase Summary
+            </h2>
+            <div class="report-controls">
+              <button class="btn btn-primary btn-sm" id="refreshSummary">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+              </button>
+              <div class="export-dropdown">
+                <button class="btn btn-success btn-sm" id="exportSummaryBtn">
+                  <i class="fas fa-download"></i>
+                  Export
                 </button>
-                <h1 class="page-title">Report Management</h1>
+                <div class="dropdown-menu" id="exportSummaryMenu">
+                  <button class="dropdown-item" data-format="json">
+                    <i class="fas fa-code"></i> JSON
+                  </button>
+                  <button class="dropdown-item" data-format="csv">
+                    <i class="fas fa-file-csv"></i> CSV
+                  </button>
+                  <button class="dropdown-item" data-format="pdf">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="user-actions">
-                <button class="btn btn-danger" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
+          </div>
+
+          <div class="date-filters">
+            <label for="summaryStartDate">Start Date:</label>
+            <input
+              type="date"
+              id="summaryStartDate"
+              class="form-control"
+              style="width: auto"
+            />
+            <label for="summaryEndDate">End Date:</label>
+            <input
+              type="date"
+              id="summaryEndDate"
+              class="form-control"
+              style="width: auto"
+            />
+            <button class="btn btn-primary btn-sm" id="applySummaryFilters">
+              <i class="fas fa-filter"></i>
+              Apply Filters
+            </button>
+          </div>
+
+          <div class="summary-cards" id="summaryCards">
+            <div class="summary-card">
+              <div class="summary-icon bg-success">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+              <div class="summary-content">
+                <h3 id="totalSales">$0.00</h3>
+                <p>Total Sales</p>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-icon bg-warning">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <div class="summary-content">
+                <h3 id="totalPurchases">$0.00</h3>
+                <p>Total Purchases</p>
+              </div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-icon bg-primary">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="summary-content">
+                <h3 id="profitMargin">$0.00</h3>
+                <p>Gross Profit</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Report -->
+      <div class="content-card">
+        <div class="report-section">
+          <div class="report-header">
+            <h2 class="report-title">
+              <i class="fas fa-boxes"></i>
+              Current Stock Levels
+            </h2>
+            <div class="report-controls">
+              <button class="btn btn-primary btn-sm" id="refreshStock">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+              </button>
+              <div class="export-dropdown">
+                <button class="btn btn-success btn-sm" id="exportStockBtn">
+                  <i class="fas fa-download"></i>
+                  Export
                 </button>
+                <div class="dropdown-menu" id="exportStockMenu">
+                  <button class="dropdown-item" data-format="json">
+                    <i class="fas fa-code"></i> JSON
+                  </button>
+                  <button class="dropdown-item" data-format="csv">
+                    <i class="fas fa-file-csv"></i> CSV
+                  </button>
+                  <button class="dropdown-item" data-format="pdf">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div id="stockLoading" class="loading" style="display: none">
+            <i class="fas fa-spinner"></i>
+            <p>Loading stock data...</p>
+          </div>
+
+          <div class="table-responsive" id="stockTableContainer">
+            <table class="table" id="stockTable">
+              <thead>
+                <tr>
+                  <th>Material Name</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Unit</th>
+                  <th>Reorder Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="stockTableBody">
+                <tr>
+                  <td colspan="6" class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <p>No stock data available</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
 
-        <!-- Sales & Purchase Summary -->
-        <div class="content-card">
-            <div class="report-section">
-                <div class="report-header">
-                    <h2 class="report-title">
-                        <i class="fas fa-chart-bar"></i>
-                        Sales & Purchase Summary
-                    </h2>
-                    <div class="report-controls">
-                        <button class="btn btn-primary btn-sm" id="refreshSummary">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh
-                        </button>
-                        <div class="export-dropdown">
-                            <button class="btn btn-success btn-sm" id="exportSummaryBtn">
-                                <i class="fas fa-download"></i>
-                                Export
-                            </button>
-                            <div class="dropdown-menu" id="exportSummaryMenu">
-                                <button class="dropdown-item" data-format="json">
-                                    <i class="fas fa-code"></i> JSON
-                                </button>
-                                <button class="dropdown-item" data-format="csv">
-                                    <i class="fas fa-file-csv"></i> CSV
-                                </button>
-                                <button class="dropdown-item" data-format="pdf">
-                                    <i class="fas fa-file-pdf"></i> PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+      <!-- Low Stock Alert -->
+      <div class="content-card">
+        <div class="report-section">
+          <div class="report-header">
+            <h2 class="report-title">
+              <i class="fas fa-exclamation-triangle"></i>
+              Low Stock Alert
+            </h2>
+            <div class="report-controls">
+              <button class="btn btn-primary btn-sm" id="refreshLowStock">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+              </button>
+              <div class="export-dropdown">
+                <button class="btn btn-success btn-sm" id="exportLowStockBtn">
+                  <i class="fas fa-download"></i>
+                  Export
+                </button>
+                <div class="dropdown-menu" id="exportLowStockMenu">
+                  <button class="dropdown-item" data-format="json">
+                    <i class="fas fa-code"></i> JSON
+                  </button>
+                  <button class="dropdown-item" data-format="csv">
+                    <i class="fas fa-file-csv"></i> CSV
+                  </button>
+                  <button class="dropdown-item" data-format="pdf">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
                 </div>
-
-                <div class="date-filters">
-                    <label for="summaryStartDate">Start Date:</label>
-                    <input type="date" id="summaryStartDate" class="form-control" style="width: auto;">
-                    <label for="summaryEndDate">End Date:</label>
-                    <input type="date" id="summaryEndDate" class="form-control" style="width: auto;">
-                    <button class="btn btn-primary btn-sm" id="applySummaryFilters">
-                        <i class="fas fa-filter"></i>
-                        Apply Filters
-                    </button>
-                </div>
-
-                <div class="summary-cards" id="summaryCards">
-                    <div class="summary-card">
-                        <div class="summary-icon bg-success">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h3 id="totalSales">$0.00</h3>
-                            <p>Total Sales</p>
-                        </div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-icon bg-warning">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h3 id="totalPurchases">$0.00</h3>
-                            <p>Total Purchases</p>
-                        </div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-icon bg-primary">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="summary-content">
-                            <h3 id="profitMargin">$0.00</h3>
-                            <p>Gross Profit</p>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
+
+          <div id="lowStockLoading" class="loading" style="display: none">
+            <i class="fas fa-spinner"></i>
+            <p>Loading low stock data...</p>
+          </div>
+
+          <div class="table-responsive" id="lowStockTableContainer">
+            <table class="table" id="lowStockTable">
+              <thead>
+                <tr>
+                  <th>Material Name</th>
+                  <th>Current Stock</th>
+                  <th>Reorder Level</th>
+                  <th>Unit</th>
+                  <th>Action Required</th>
+                </tr>
+              </thead>
+              <tbody id="lowStockTableBody">
+                <tr>
+                  <td colspan="5" class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No low stock items found</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        <!-- Stock Report -->
-        <div class="content-card">
-            <div class="report-section">
-                <div class="report-header">
-                    <h2 class="report-title">
-                        <i class="fas fa-boxes"></i>
-                        Current Stock Levels
-                    </h2>
-                    <div class="report-controls">
-                        <button class="btn btn-primary btn-sm" id="refreshStock">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh
-                        </button>
-                        <div class="export-dropdown">
-                            <button class="btn btn-success btn-sm" id="exportStockBtn">
-                                <i class="fas fa-download"></i>
-                                Export
-                            </button>
-                            <div class="dropdown-menu" id="exportStockMenu">
-                                <button class="dropdown-item" data-format="json">
-                                    <i class="fas fa-code"></i> JSON
-                                </button>
-                                <button class="dropdown-item" data-format="csv">
-                                    <i class="fas fa-file-csv"></i> CSV
-                                </button>
-                                <button class="dropdown-item" data-format="pdf">
-                                    <i class="fas fa-file-pdf"></i> PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="stockLoading" class="loading" style="display: none;">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading stock data...</p>
-                </div>
-
-                <div class="table-responsive" id="stockTableContainer">
-                    <table class="table" id="stockTable">
-                        <thead>
-                            <tr>
-                                <th>Material Name</th>
-                                <th>Category</th>
-                                <th>Current Stock</th>
-                                <th>Unit</th>
-                                <th>Reorder Level</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stockTableBody">
-                            <tr>
-                                <td colspan="6" class="empty-state">
-                                    <i class="fas fa-box-open"></i>
-                                    <p>No stock data available</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Low Stock Alert -->
-        <div class="content-card">
-            <div class="report-section">
-                <div class="report-header">
-                    <h2 class="report-title">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Low Stock Alert
-                    </h2>
-                    <div class="report-controls">
-                        <button class="btn btn-primary btn-sm" id="refreshLowStock">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh
-                        </button>
-                        <div class="export-dropdown">
-                            <button class="btn btn-success btn-sm" id="exportLowStockBtn">
-                                <i class="fas fa-download"></i>
-                                Export
-                            </button>
-                            <div class="dropdown-menu" id="exportLowStockMenu">
-                                <button class="dropdown-item" data-format="json">
-                                    <i class="fas fa-code"></i> JSON
-                                </button>
-                                <button class="dropdown-item" data-format="csv">
-                                    <i class="fas fa-file-csv"></i> CSV
-                                </button>
-                                <button class="dropdown-item" data-format="pdf">
-                                    <i class="fas fa-file-pdf"></i> PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="lowStockLoading" class="loading" style="display: none;">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading low stock data...</p>
-                </div>
-
-                <div class="table-responsive" id="lowStockTableContainer">
-                    <table class="table" id="lowStockTable">
-                        <thead>
-                            <tr>
-                                <th>Material Name</th>
-                                <th>Current Stock</th>
-                                <th>Reorder Level</th>
-                                <th>Unit</th>
-                                <th>Action Required</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lowStockTableBody">
-                            <tr>
-                                <td colspan="5" class="empty-state">
-                                    <i class="fas fa-check-circle"></i>
-                                    <p>No low stock items found</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+      </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="src/js/pages/reports.js" type="module"></script>
-</body>
+  </body>
 </html>
