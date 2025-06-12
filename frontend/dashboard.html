@@ -3,64 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Building Materials</title>
+    <title>Dashboard - BuildMat</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script> -->
-    <link rel="stylesheet" href="src/css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="src/css/dashboard.css">
 </head>
 <body>
-    <div class="overlay" id="overlay"></div>
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2><i class="fas fa-building"></i> BuildMat</h2>
             <p>Management System</p>
         </div>
-        
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="#" class="nav-link active" data-page="dashboard">
+                <a href="dashboard.html" class="nav-link active">
                     <i class="fas fa-tachometer-alt"></i>
                     Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="inventory">
+                <a href="inventory.html" class="nav-link">
                     <i class="fas fa-boxes"></i>
                     Inventory
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="sales">
+                <a href="sales.html" class="nav-link">
                     <i class="fas fa-chart-line"></i>
                     Sales
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="purchases">
+                <a href="purchases.html" class="nav-link">
                     <i class="fas fa-shopping-cart"></i>
                     Purchases
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="expenses">
+                <a href="expenses.html" class="nav-link">
                     <i class="fas fa-receipt"></i>
                     Expenses
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="reports">
+                <a href="reports.html" class="nav-link">
                     <i class="fas fa-file-alt"></i>
                     Reports
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="suppliers">
+                <a href="suppliers.html" class="nav-link">
                     <i class="fas fa-truck"></i>
                     Suppliers
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" data-page="customers">
+                <a href="customers.html" class="nav-link">
                     <i class="fas fa-users"></i>
                     Customers
                 </a>
@@ -70,11 +69,11 @@
 
     <main class="main-content" id="mainContent">
         <div class="top-bar">
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px">
                 <button class="menu-toggle" id="menuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <h1 class="page-title">Dashboard</h1>
+                <h1 class="page-title">Dashboard Overview</h1>
             </div>
             <div class="user-actions">
                 <button class="logout-btn" id="logoutBtn">
@@ -84,303 +83,183 @@
             </div>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="stat-card">
-                <h3>Total Inventory Value</h3>
-                <div class="stat-value" id="inventoryValue">₹0</div>
-                <div class="stat-label">Current stock value</div>
+        <!-- Key Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalInventoryValue">$0</h3>
+                        <p>Total Inventory Value</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3>Monthly Sales</h3>
-                <div class="stat-value" id="monthlySales">₹0</div>
-                <div class="stat-label">This month's revenue</div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="monthlySales">$0</h3>
+                        <p>Monthly Sales</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3>Active Suppliers</h3>
-                <div class="stat-value" id="activeSuppliers">0</div>
-                <div class="stat-label">Registered suppliers</div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="monthlyPurchases">$0</h3>
+                        <p>Monthly Purchases</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="stat-card">
-                <h3>Low Stock Items</h3>
-                <div class="stat-value" id="lowStockItems">0</div>
-                <div class="stat-label">Items needing restock</div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="monthlyExpenses">$0</h3>
+                        <p>Monthly Expenses</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="chart-container">
-            <h3 class="chart-title">Top Selling Materials</h3>
-            <canvas id="topSellingChart" width="400" height="200"></canvas>
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <i class="fas fa-users"></i>
+                <h4 id="totalCustomers">0</h4>
+                <p>Active Customers</p>
+            </div>
+            <div class="quick-stat">
+                <i class="fas fa-truck"></i>
+                <h4 id="totalSuppliers">0</h4>
+                <p>Suppliers</p>
+            </div>
+            <div class="quick-stat">
+                <i class="fas fa-cubes"></i>
+                <h4 id="totalMaterials">0</h4>
+                <p>Material Types</p>
+            </div>
+            <div class="quick-stat">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4 id="lowStockItems">0</h4>
+                <p>Low Stock Items</p>
+            </div>
         </div>
 
-        <div class="chart-container">
-            <h3 class="chart-title">Monthly Summary</h3>
-            <canvas id="monthlySummaryChart" width="400" height="200"></canvas>
+        <div class="row">
+            <!-- Monthly Summary Chart -->
+            <div class="col-lg-8 mb-4">
+                <div class="content-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Monthly Financial Summary
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-clock me-2"></i>
+                        Recent Activities
+                    </h4>
+                    <div id="recentActivities">
+                        <!-- Activities will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Top Selling Materials -->
+            <div class="col-lg-6 mb-4">
+                <div class="content-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-star me-2"></i>
+                        Top Selling Materials
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="topSellingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Status -->
+            <div class="col-lg-6 mb-4">
+                <div class="table-container">
+                    <h4 class="mb-3">
+                        <i class="fas fa-warehouse me-2"></i>
+                        Inventory Status
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryStatusTable">
+                                <!-- Inventory data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="content-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Financial Overview
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="chart-container">
+                                <canvas id="financialChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex flex-column gap-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h6 class="mb-1">Net Profit Margin</h6>
+                                    <h4 class="text-success mb-0" id="profitMargin">0%</h4>
+                                </div>
+                                <div class="p-3 bg-light rounded">
+                                    <h6 class="mb-1">Revenue Growth</h6>
+                                    <h4 class="text-primary mb-0" id="revenueGrowth">0%</h4>
+                                </div>
+                                <div class="p-3 bg-light rounded">
+                                    <h6 class="mb-1">Expense Ratio</h6>
+                                    <h4 class="text-warning mb-0" id="expenseRatio">0%</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
-
-    <script type="module">
-        // ===== AUTHENTICATION & TOKEN CHECK (from your dashboard.js) =====
-        const token = localStorage.getItem("token");
-        if (!token) location.replace("index.html");
-
-        // ===== API CLIENT MOCK (replace with your actual apiClient import) =====
-        // This is a placeholder - replace with: import apiClient from "../apiClient";
-        const apiClient = {
-            get: async (url) => {
-                // Mock API responses for demonstration
-                if (url === "/dashboard/inventory-value/") {
-                    return { total_inventory_value: 1245670 };
-                }
-                if (url.includes("/dashboard/top-selling-materials/")) {
-                    return [
-                        { material__name: "Cement", total_sold: 1200 },
-                        { material__name: "Steel Rods", total_sold: 950 },
-                        { material__name: "Bricks", total_sold: 800 },
-                        { material__name: "Sand", total_sold: 600 },
-                        { material__name: "Gravel", total_sold: 450 }
-                    ];
-                }
-                if (url.includes("/dashboard/monthly-summary/")) {
-                    return {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        sales: [65000, 78000, 82000, 71000, 89000, 94000, 87000, 92000, 98000, 85000, 79000, 88000],
-                        purchases: [45000, 52000, 48000, 61000, 59000, 67000, 52000, 58000, 62000, 59000, 48000, 52000],
-                        expenses: [12000, 15000, 14000, 18000, 16000, 19000, 15000, 17000, 18000, 16000, 14000, 15000]
-                    };
-                }
-            }
-        };
-
-        // ===== MOBILE MENU FUNCTIONALITY =====
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const overlay = document.getElementById('overlay');
-        
-        menuToggle.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('active');
-            } else {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-            }
-        });
-
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-        });
-
-        // ===== NAVIGATION FUNCTIONALITY =====
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pageTitle = document.querySelector('.page-title');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                const pageName = link.getAttribute('data-page');
-                
-                // Handle navigation to different pages (from your original structure)
-                switch(pageName) {
-                    case 'dashboard':
-                        // Already on dashboard
-                        break;
-                    case 'inventory':
-                        window.location.href = 'inventory.html';
-                        break;
-                    case 'sales':
-                        window.location.href = 'sales.html';
-                        break;
-                    case 'purchases':
-                        window.location.href = 'purchases.html';
-                        break;
-                    case 'expenses':
-                        window.location.href = 'expenses.html';
-                        break;
-                    case 'reports':
-                        window.location.href = 'reports.html';
-                        break;
-                    case 'suppliers':
-                        window.location.href = 'suppliers.html';
-                        break;
-                    case 'customers':
-                        window.location.href = 'customers.html';
-                        break;
-                }
-                
-                // Remove active class from all links
-                navLinks.forEach(l => l.classList.remove('active'));
-                
-                // Add active class to clicked link
-                link.classList.add('active');
-                
-                // Update page title
-                const displayName = link.textContent.trim();
-                pageTitle.textContent = displayName;
-                
-                // Close mobile menu
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('active');
-                }
-            });
-        });
-
-        // ===== LOGOUT FUNCTIONALITY (from your dashboard.js) =====
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.removeItem("token");
-            location.replace("index.html");
-        });
-
-        // ===== API DATA LOADING (from your dashboard.js) =====
-        
-        // 1. Load Inventory Value
-        apiClient.get("/dashboard/inventory-value/").then((data) => {
-            document.getElementById("inventoryValue").textContent = 
-                "₹" + new Intl.NumberFormat().format(data.total_inventory_value);
-        }).catch(error => {
-            console.error('Error loading inventory value:', error);
-            document.getElementById("inventoryValue").textContent = "₹0";
-        });
-
-        // 2. Load Top-selling materials chart
-        apiClient.get("/dashboard/top-selling-materials/?limit=5").then((data) => {
-            const ctx = document.getElementById("topSellingChart").getContext('2d');
-            new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: data.map((d) => d.material__name),
-                    datasets: [{
-                        label: "Qty Sold",
-                        data: data.map((d) => d.total_sold),
-                        backgroundColor: [
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)',
-                            'rgba(231, 76, 60, 0.8)',
-                            'rgba(52, 152, 219, 0.8)',
-                            'rgba(46, 204, 113, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(102, 126, 234, 1)',
-                            'rgba(118, 75, 162, 1)',
-                            'rgba(231, 76, 60, 1)',
-                            'rgba(52, 152, 219, 1)',
-                            'rgba(46, 204, 113, 1)'
-                        ],
-                        borderWidth: 2,
-                        borderRadius: 8
-                    }]
-                },
-                options: { 
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-        }).catch(error => {
-            console.error('Error loading top selling materials:', error);
-        });
-
-        // 3. Load Monthly summary chart
-        apiClient
-            .get(`/dashboard/monthly-summary/?year=${new Date().getFullYear()}`)
-            .then(({ labels, sales, purchases, expenses }) => {
-                const ctx = document.getElementById("monthlySummaryChart").getContext('2d');
-                new Chart(ctx, {
-                    type: "line",
-                    data: {
-                        labels,
-                        datasets: [
-                            { 
-                                label: "Sales", 
-                                data: sales,
-                                borderColor: 'rgba(102, 126, 234, 1)',
-                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            },
-                            { 
-                                label: "Purchases", 
-                                data: purchases,
-                                borderColor: 'rgba(231, 76, 60, 1)',
-                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            },
-                            { 
-                                label: "Expenses", 
-                                data: expenses,
-                                borderColor: 'rgba(52, 152, 219, 1)',
-                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }
-                        ],
-                    },
-                    options: { 
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.1)'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }).catch(error => {
-                console.error('Error loading monthly summary:', error);
-            });
-
-        // ===== ADDITIONAL DASHBOARD STATS (Optional - you can add these API endpoints) =====
-        // These would require additional API endpoints in your Django backend
-        
-        // Mock data for additional stats - replace with real API calls
-        setTimeout(() => {
-            document.getElementById('monthlySales').textContent = '₹3,24,890';
-            document.getElementById('activeSuppliers').textContent = '47';
-            document.getElementById('lowStockItems').textContent = '12';
-        }, 1000);
-
-        // ===== WINDOW RESIZE HANDLER =====
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('active');
-            }
-        });
-    </script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="src/js/pages/dashboard.js" type="module"></script>
+    <script src="src/js/auth.js" type="module"></script>
 </body>
 </html>
