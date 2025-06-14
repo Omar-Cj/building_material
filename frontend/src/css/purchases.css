@@ -1,4 +1,4 @@
-* {
+ * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -234,17 +234,18 @@
             font-size: 0.85rem;
         }
 
+        /* IMPROVED SEARCH AND FILTER SECTION */
         .search-filter-section {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
             gap: 15px;
             margin-bottom: 25px;
-            flex-wrap: wrap;
+            align-items: end;
         }
 
         .search-box {
-            flex: 1;
-            min-width: 250px;
             position: relative;
+            width: 100%;
         }
 
         .search-box input,
@@ -278,6 +279,7 @@
         }
 
         .form-select {
+            min-width: 180px;
             padding: 12px 15px;
             border: 2px solid #e1e8ed;
             border-radius: 12px;
@@ -362,6 +364,7 @@
         .bg-warning { background: linear-gradient(135deg, #f39c12, #e67e22) !important; }
         .bg-success { background: linear-gradient(135deg, #27ae60, #229954) !important; }
         .bg-danger { background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
+        .bg-info { background: linear-gradient(135deg, #3498db, #2980b9) !important; }
 
         .modal-content {
             border-radius: 20px;
@@ -449,6 +452,18 @@
             }
         }
 
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 992px) {
+            .search-filter-section {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .form-select {
+                min-width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-280px);
@@ -464,7 +479,8 @@
             }
             
             .search-filter-section {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
             
             .table-responsive {
@@ -474,5 +490,11 @@
             .table th,
             .table td {
                 padding: 10px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .search-filter-section {
+                grid-template-columns: 2fr auto auto;
             }
         }
