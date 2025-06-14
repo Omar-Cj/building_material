@@ -97,7 +97,7 @@ class PurchaseManager {
                 <tr>
                     <td><strong>PO-${String(purchase.id).padStart(4, '0')}</strong></td>
                     <td>${supplier ? supplier.name : 'Unknown'}</td>
-                    <td><span class="badge bg-info text-dark">${itemCount} item${itemCount !== 1 ? 's' : ''}</span></td>
+                    <td><span class="badge bg-info text-white">${itemCount} item${itemCount !== 1 ? 's' : ''}</span></td>
                     <td><strong>$${totalAmount.toFixed(2)}</strong></td>
                     <td><span class="badge ${this.getStatusClass(purchase.status)}">${purchase.status}</span></td>
                     <td>${new Date(purchase.created_at).toLocaleDateString()}</td>
