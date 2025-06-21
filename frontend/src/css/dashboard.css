@@ -194,6 +194,9 @@
         .stat-icon.bg-info { 
             background: linear-gradient(135deg, #17a2b8, #138496); 
         }
+        .stat-icon.bg-secondary { 
+            background: linear-gradient(135deg, #6c757d, #5a6268); 
+        }
         
         .stat-content h3 {
             font-size: 2rem;
@@ -270,39 +273,6 @@
             color: #95a5a6;
         }
 
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .quick-stat {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .quick-stat i {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: #3498db;
-        }
-
-        .quick-stat h4 {
-            margin: 0;
-            color: #2c3e50;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .quick-stat p {
-            margin: 0;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
 
         .table-container {
             background: rgba(255, 255, 255, 0.95);
@@ -359,6 +329,131 @@
         .badge-danger {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
+        }
+
+        /* Debt-related styling */
+        .debt-card {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .debt-card .stat-icon.bg-danger { 
+            background: linear-gradient(135deg, #e74c3c, #c0392b); 
+        }
+        
+        .debt-card .stat-icon.bg-warning { 
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+        }
+        
+        .debt-card .stat-icon.bg-dark { 
+            background: linear-gradient(135deg, #2c3e50, #34495e); 
+        }
+        
+        .debt-card .stat-icon.bg-secondary { 
+            background: linear-gradient(135deg, #6c757d, #5a6268); 
+        }
+
+        .debt-activity-item {
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 12px;
+            border-left: 4px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .debt-activity-item:hover {
+            background: rgba(52, 152, 219, 0.05);
+            border-left-color: #3498db;
+            transform: translateX(2px);
+        }
+
+        .debt-activity-item .text-danger {
+            color: #e74c3c !important;
+        }
+
+        .debt-activity-item .text-muted {
+            color: #6c757d !important;
+        }
+
+        .debt-activity-item h6 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .debt-activity-item .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        .debt-activity-item .bg-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+        }
+
+        .debt-activity-item .bg-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+        }
+
+        .debt-activity-item .bg-success {
+            background: linear-gradient(135deg, #27ae60, #229954) !important;
+        }
+
+        .debt-activity-item .bg-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+        }
+
+        /* Inventory item styling */
+        .inventory-item {
+            padding: 15px;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 12px;
+            border-left: 4px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .inventory-item:hover {
+            background: rgba(52, 152, 219, 0.05);
+            border-left-color: #3498db;
+            transform: translateX(2px);
+        }
+
+        .inventory-icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .inventory-item h6 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .inventory-item .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        .inventory-item .bg-success {
+            background: linear-gradient(135deg, #27ae60, #229954) !important;
+        }
+
+        .inventory-item .bg-info {
+            background: linear-gradient(135deg, #17a2b8, #138496) !important;
+        }
+
+        .inventory-item .bg-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+        }
+
+        .inventory-item .bg-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
         }
 
         @media (max-width: 768px) {

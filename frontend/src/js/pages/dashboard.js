@@ -42,25 +42,31 @@ class Dashboard {
     async loadDashboardData() {
         try {
             // Load all dashboard data concurrently
-            const [inventoryValue, topSelling, activities, monthlySummary] = await Promise.all([
+            const [inventoryValue, topSelling, activities, monthlySummary, summaryCounts, debtSummary, inventoryStatus] = await Promise.all([
                 this.getInventoryValue(),
                 this.getTopSellingMaterials(),
                 this.getRecentActivities(),
-                this.getMonthlySummary()
+                this.getMonthlySummary(),
+                this.getSummaryCounts(),
+                this.getDebtSummary(),
+                this.getInventoryStatus()
             ]);
 
             // Update UI with fetched data
             this.updateStatCards(inventoryValue, monthlySummary);
-            this.updateQuickStats();
+            this.updateBusinessStats(summaryCounts);
+            this.updateDebtCards(debtSummary);
             this.updateRecentActivities(activities);
-            this.updateInventoryTable();
+            this.updateRecentDebts(debtSummary.recent_activities);
+            this.updateInventoryTable(inventoryStatus.inventory_status);
             this.updateFinancialMetrics(monthlySummary);
             
             // Store data for charts
             this.dashboardData = {
                 monthlySummary,
                 topSelling,
-                inventoryValue
+                inventoryValue,
+                debtSummary
             };
 
         } catch (error) {
@@ -111,6 +117,50 @@ class Dashboard {
         }
     }
 
+    async getSummaryCounts() {
+        try {
+            return await apiClient.get('/dashboard/summary-counts/');
+        } catch (error) {
+            console.error('Error fetching summary counts:', error);
+            return {
+                total_customers: 0,
+                total_suppliers: 0,
+                total_categories: 0,
+                low_stock_items: 0
+            };
+        }
+    }
+
+    async getDebtSummary() {
+        try {
+            return await apiClient.get('/dashboard/debt-summary/');
+        } catch (error) {
+            console.error('Error fetching debt summary:', error);
+            return {
+                total_debt_amount: 0,
+                outstanding_amount: 0,
+                overdue_count: 0,
+                overdue_amount: 0,
+                status_distribution: {},
+                recent_activities: [],
+                collection_rate: 0
+            };
+        }
+    }
+
+    async getInventoryStatus() {
+        try {
+            return await apiClient.get('/dashboard/inventory-status/?limit=5');
+        } catch (error) {
+            console.error('Error fetching inventory status:', error);
+            return {
+                inventory_status: [],
+                total_materials: 0,
+                low_stock_count: 0
+            };
+        }
+    }
+
     updateStatCards(inventoryData, monthlyData) {
         const currentMonth = new Date().getMonth();
         
@@ -121,22 +171,64 @@ class Dashboard {
         this.updateElement('monthlyExpenses', this.formatCurrency(monthlyData.expenses[currentMonth]));
     }
 
-    async updateQuickStats() {
+    updateBusinessStats(summaryData) {
         try {
-            // These would need additional API endpoints or can use sample data
-            const stats = {
-                totalCustomers: 156,
-                totalSuppliers: 42,
-                totalMaterials: 89,
-                lowStockItems: 12
-            };
-
-            Object.entries(stats).forEach(([key, value]) => {
-                this.updateElement(key, value);
-            });
+            this.updateElement('totalCustomers', summaryData.total_customers || 0);
+            this.updateElement('totalSuppliers', summaryData.total_suppliers || 0);
+            this.updateElement('totalCategories', summaryData.total_categories || 0);
+            this.updateElement('lowStockItems', summaryData.low_stock_items || 0);
         } catch (error) {
-            console.error('Error updating quick stats:', error);
+            console.error('Error updating business stats:', error);
         }
+    }
+
+    updateDebtCards(debtData) {
+        try {
+            this.updateElement('totalOutstandingDebt', this.formatCurrency(debtData.outstanding_amount || 0));
+            this.updateElement('overdueDebts', debtData.overdue_count || 0);
+            this.updateElement('collectionRate', `${(debtData.collection_rate || 0).toFixed(1)}%`);
+            this.updateElement('overdueAmount', this.formatCurrency(debtData.overdue_amount || 0));
+        } catch (error) {
+            console.error('Error updating debt cards:', error);
+        }
+    }
+
+    updateRecentDebts(recentDebts) {
+        const container = document.getElementById('recentDebts');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        if (!recentDebts || recentDebts.length === 0) {
+            container.innerHTML = '<p class="text-muted">No recent debt activities</p>';
+            return;
+        }
+
+        recentDebts.forEach(debt => {
+            const debtDiv = document.createElement('div');
+            debtDiv.className = 'debt-activity-item mb-3';
+            const statusClass = debt.is_overdue ? 'text-danger' : 'text-muted';
+            const statusIcon = debt.is_overdue ? 'fa-exclamation-triangle' : 'fa-clock';
+            
+            debtDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${debt.customer_name}</h6>
+                        <p class="mb-1 small">
+                            <strong>${this.formatCurrency(debt.remaining_amount)}</strong> outstanding
+                        </p>
+                        <small class="${statusClass}">
+                            <i class="fas ${statusIcon} me-1"></i>
+                            ${debt.is_overdue ? 'Overdue' : 'Due'}: ${this.formatDate(debt.due_date)}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge ${this.getDebtStatusClass(debt.status)}">${this.formatDebtStatus(debt.status)}</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(debtDiv);
+        });
     }
 
     updateRecentActivities(activities) {
@@ -162,30 +254,49 @@ class Dashboard {
         });
     }
 
-    updateInventoryTable() {
-        // Sample inventory data - would come from API in real implementation
-        const inventoryData = [
-            { material: 'Cement', stock: 150, status: 'Good', value: 15000 },
-            { material: 'Steel Bars', stock: 25, status: 'Low', value: 12500 },
-            { material: 'Bricks', stock: 500, status: 'Good', value: 8000 },
-            { material: 'Sand', stock: 8, status: 'Critical', value: 2400 },
-            { material: 'Gravel', stock: 75, status: 'Good', value: 3750 }
-        ];
+    updateInventoryTable(inventoryData) {
+        const container = document.getElementById('inventoryStatusList');
+        if (!container) return;
 
-        const table = document.getElementById('inventoryStatusTable');
-        if (!table) return;
+        container.innerHTML = '';
+        
+        if (!inventoryData || inventoryData.length === 0) {
+            container.innerHTML = '<p class="text-muted">No inventory data available</p>';
+            return;
+        }
 
-        table.innerHTML = '';
         inventoryData.forEach(item => {
-            const row = document.createElement('tr');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'inventory-item mb-3';
             const statusClass = this.getStatusClass(item.status);
-            row.innerHTML = `
-                <td>${item.material}</td>
-                <td>${item.stock} units</td>
-                <td><span class="badge ${statusClass}">${item.status}</span></td>
-                <td>${this.formatCurrency(item.value)}</td>
+            const stockStatusClass = item.status === 'Critical' || item.status === 'Low' ? 'text-danger' : 'text-muted';
+            
+            itemDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            <div class="inventory-icon me-2">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${item.material}</h6>
+                                <small class="text-muted">SKU: ${item.sku}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="${stockStatusClass}">
+                                <i class="fas fa-warehouse me-1"></i>
+                                ${item.stock.toFixed(1)} ${item.unit} in stock
+                            </small>
+                            <small class="text-muted">${this.formatCurrency(item.value)}</small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge ${statusClass}">${item.status}</span>
+                    </div>
+                </div>
             `;
-            table.appendChild(row);
+            container.appendChild(itemDiv);
         });
     }
 
@@ -210,6 +321,7 @@ class Dashboard {
         this.createMonthlyChart();
         this.createTopSellingChart();
         this.createFinancialChart();
+        this.createDebtStatusChart();
     }
 
     createMonthlyChart() {
@@ -351,6 +463,7 @@ class Dashboard {
     getStatusClass(status) {
         const classes = {
             'Good': 'badge-success',
+            'Medium': 'badge-info', 
             'Low': 'badge-warning',
             'Critical': 'badge-danger'
         };
@@ -391,6 +504,99 @@ class Dashboard {
         }
 
         return quarters;
+    }
+
+    createDebtStatusChart() {
+        const ctx = document.getElementById('debtStatusChart');
+        if (!ctx || !this.dashboardData.debtSummary) return;
+
+        const statusData = this.dashboardData.debtSummary.status_distribution;
+        const labels = [];
+        const data = [];
+        const colors = [];
+
+        // Map status to labels and colors
+        const statusMap = {
+            'pending': { label: 'Pending', color: '#ffc107' },
+            'overdue': { label: 'Overdue', color: '#dc3545' },
+            'partially_paid': { label: 'Partially Paid', color: '#fd7e14' },
+            'paid': { label: 'Paid', color: '#28a745' }
+        };
+
+        Object.entries(statusData).forEach(([status, count]) => {
+            if (count > 0 && statusMap[status]) {
+                labels.push(statusMap[status].label);
+                data.push(count);
+                colors.push(statusMap[status].color);
+            }
+        });
+
+        this.charts.debtStatus = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    getDebtStatusClass(status) {
+        const classes = {
+            'pending': 'bg-warning',
+            'overdue': 'bg-danger',
+            'partially_paid': 'bg-warning',
+            'paid': 'bg-success'
+        };
+        return classes[status] || 'bg-secondary';
+    }
+
+    formatDebtStatus(status) {
+        const statusMap = {
+            'pending': 'Pending',
+            'overdue': 'Overdue',
+            'partially_paid': 'Partial',
+            'paid': 'Paid'
+        };
+        return statusMap[status] || status;
+    }
+
+    formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
     }
 
     handleResize() {
