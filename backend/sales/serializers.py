@@ -16,8 +16,8 @@ class SaleSerializer(serializers.ModelSerializer):
         model = Sale
         fields = [
             'id', 'customer', 'sale_date', 'tax', 'discount',
-            'total_amount', 'payment_method', 'created_by',
-            'updated_by', 'items'
+            'total_amount', 'payment_method', 'payment_status', 'due_date',
+            'created_by', 'updated_by', 'items'
         ]
         read_only_fields = ['id', 'sale_date', 'total_amount', 'created_by', 'updated_by']
 
@@ -25,6 +25,56 @@ class SaleSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("At least one item is required.")
         return value
+    
+    def validate(self, data):
+        """Custom validation for sales, including credit limit checks."""
+        customer = data.get('customer')
+        payment_method = data.get('payment_method')
+        items = data.get('items', [])
+        
+        # Calculate total amount - use Decimal for consistency
+        from decimal import Decimal
+        
+        total = Decimal('0')
+        for item in items:
+            quantity = Decimal(str(item['quantity']))
+            price = Decimal(str(item['price']))
+            total += quantity * price
+        
+        # Add tax, subtract discount
+        tax = Decimal(str(data.get('tax', 0)))
+        discount = Decimal(str(data.get('discount', 0)))
+        total += tax
+        total -= discount
+        
+        # Credit sale validation
+        if payment_method == Sale.CREDIT:
+            # Require due_date for credit sales
+            if not data.get('due_date'):
+                raise serializers.ValidationError("Due date is required for credit sales.")
+            
+            # Check customer credit limit
+            if customer and customer.credit_limit > 0:
+                current_outstanding = Decimal(str(customer.outstanding_balance or 0))
+                credit_limit = Decimal(str(customer.credit_limit))
+                
+                if current_outstanding + total > credit_limit:
+                    available_credit = credit_limit - current_outstanding
+                    raise serializers.ValidationError(
+                        f"This sale would exceed customer's credit limit of ${float(credit_limit):,.2f}. "
+                        f"Current outstanding: ${float(current_outstanding):,.2f}, Sale amount: ${float(total):,.2f}, "
+                        f"Available credit: ${float(available_credit):,.2f}"
+                    )
+            
+            # Set payment status for credit sales
+            data['payment_status'] = Sale.PENDING
+        else:
+            # For non-credit sales, payment is considered complete
+            data['payment_status'] = Sale.PAID
+            # Clear due_date for non-credit sales
+            data['due_date'] = None
+        
+        return data
 
     @transaction.atomic
     def create(self, validated_data):

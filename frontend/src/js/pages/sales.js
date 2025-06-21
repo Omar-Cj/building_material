@@ -153,6 +153,7 @@ class SalesManager {
                             <option value="cash">Cash</option>
                             <option value="zaad">Zaad</option>
                             <option value="edahab">Edahab</option>
+                            <option value="credit">Credit</option>
                         </select>
                     </div>
 
@@ -281,7 +282,8 @@ class SalesManager {
         const classes = {
             'cash': 'bg-success',
             'zaad': 'bg-primary',
-            'edahab': 'bg-info'
+            'edahab': 'bg-info',
+            'credit': 'bg-warning'
         };
         return classes[method] || 'bg-secondary';
     }
@@ -320,11 +322,34 @@ class SalesManager {
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label required">Payment Method</label>
-                                            <select class="form-control" id="salePaymentMethod" required>
+                                            <select class="form-control" id="salePaymentMethod" required onchange="salesManager.handlePaymentMethodChange()">
                                                 <option value="cash" ${sale && sale.payment_method === 'cash' ? 'selected' : ''}>Cash</option>
                                                 <option value="zaad" ${sale && sale.payment_method === 'zaad' ? 'selected' : ''}>Zaad</option>
-                                                <option value="edahab" ${sale && sale.payment_method === 'edahab' ? 'selected' : ''}>Check</option>
+                                                <option value="edahab" ${sale && sale.payment_method === 'edahab' ? 'selected' : ''}>Edahab</option>
+                                                <option value="credit" ${sale && sale.payment_method === 'credit' ? 'selected' : ''}>Credit</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Credit Sale Fields -->
+                                <div class="credit-sale-fields" id="creditSaleFields" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-credit-card"></i> Credit Sale Information</h6>
+                                        <div id="customerCreditInfo" class="mt-2"></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label required">Due Date</label>
+                                                <input type="date" class="form-control" id="saleDueDate" value="${sale && sale.due_date ? sale.due_date : ''}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Payment Status</label>
+                                                <input type="text" class="form-control" id="salePaymentStatus" readonly value="${sale && sale.payment_status ? sale.payment_status : 'Pending'}">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -380,11 +405,20 @@ class SalesManager {
         document.getElementById('addItemBtn').addEventListener('click', () => this.addItemRow());
         document.getElementById('saveSaleBtn').addEventListener('click', () => this.saveSale(isEdit ? sale.id : null));
         
+        // Setup customer change listener for credit validation
+        document.getElementById('saleCustomer').addEventListener('change', () => {
+            this.updateCustomerCreditInfo();
+            this.validateCreditSale();
+        });
+        
         document.getElementById('saleModal').addEventListener('hidden.bs.modal', () => {
             document.getElementById('saleModal').remove();
         });
 
         this.calculateTotal();
+        
+        // Initialize credit fields if payment method is credit
+        this.handlePaymentMethodChange();
     }
 
     createItemRow(item = null, index = 0) {
@@ -446,6 +480,98 @@ class SalesManager {
         if (totalInput) {
             totalInput.value = total.toFixed(2);
         }
+        
+        // Handle credit validation when total changes
+        this.validateCreditSale();
+    }
+    
+    handlePaymentMethodChange() {
+        const paymentMethod = document.getElementById('salePaymentMethod')?.value;
+        const creditFields = document.getElementById('creditSaleFields');
+        
+        if (paymentMethod === 'credit') {
+            creditFields.style.display = 'block';
+            this.updateCustomerCreditInfo();
+            this.validateCreditSale();
+        } else {
+            creditFields.style.display = 'none';
+        }
+    }
+    
+    async updateCustomerCreditInfo() {
+        const customerId = document.getElementById('saleCustomer')?.value;
+        const creditInfoDiv = document.getElementById('customerCreditInfo');
+        
+        if (!customerId || !creditInfoDiv) return;
+        
+        try {
+            const customer = this.customers.find(c => c.id == customerId);
+            if (customer) {
+                const creditLimit = customer.credit_limit || 0;
+                const outstanding = customer.outstanding_balance || 0;
+                const available = creditLimit - outstanding;
+                
+                creditInfoDiv.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Credit Limit:</strong> $${creditLimit.toFixed(2)}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Outstanding:</strong> $${outstanding.toFixed(2)}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Available:</strong> <span class="${available > 0 ? 'text-success' : 'text-danger'}">$${available.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error updating customer credit info:', error);
+        }
+    }
+    
+    async validateCreditSale() {
+        const customerId = document.getElementById('saleCustomer')?.value;
+        const paymentMethod = document.getElementById('salePaymentMethod')?.value;
+        const totalAmount = parseFloat(document.getElementById('saleTotalAmount')?.value) || 0;
+        
+        if (paymentMethod !== 'credit' || !customerId || totalAmount <= 0) return;
+        
+        try {
+            const response = await apiClient.post('/debts/validate-credit/', {
+                customer_id: customerId,
+                credit_amount: totalAmount
+            });
+            
+            const creditInfoDiv = document.getElementById('customerCreditInfo');
+            if (creditInfoDiv && response.can_take_credit !== undefined) {
+                const statusIcon = response.can_take_credit ? 
+                    '<i class="fas fa-check-circle text-success"></i>' : 
+                    '<i class="fas fa-exclamation-triangle text-danger"></i>';
+                
+                const statusMessage = response.can_take_credit ? 
+                    'Credit approved' : 
+                    `Credit denied: ${response.reason}`;
+                
+                creditInfoDiv.innerHTML += `
+                    <div class="mt-2">
+                        <strong>${statusIcon} ${statusMessage}</strong>
+                        ${response.approval_required ? '<br><small class="text-warning">Manager approval may be required</small>' : ''}
+                    </div>
+                `;
+                
+                // Disable/enable save button based on credit validation
+                const saveBtn = document.getElementById('saveSaleBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = !response.can_take_credit;
+                    if (!response.can_take_credit) {
+                        saveBtn.title = response.reason;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error validating credit:', error);
+        }
     }
 
     async saveSale(saleId = null) {
@@ -475,6 +601,7 @@ class SalesManager {
         const paymentMethod = document.getElementById('salePaymentMethod').value;
         const tax = parseFloat(document.getElementById('saleTax').value) || 0;
         const discount = parseFloat(document.getElementById('saleDiscount').value) || 0;
+        const dueDate = document.getElementById('saleDueDate')?.value;
 
         const items = [];
         document.querySelectorAll('.item-row').forEach(row => {
@@ -491,8 +618,37 @@ class SalesManager {
             this.showAlert('Please fill all required fields and add at least one item', 'warning');
             return null;
         }
+        
+        // Validate credit sale specific fields
+        if (paymentMethod === 'credit') {
+            if (!dueDate) {
+                this.showAlert('Due date is required for credit sales', 'warning');
+                return null;
+            }
+            
+            // Check if due date is in the future
+            const today = new Date();
+            const dueDateObj = new Date(dueDate);
+            if (dueDateObj <= today) {
+                this.showAlert('Due date must be in the future', 'warning');
+                return null;
+            }
+        }
 
-        return { customer: parseInt(customer), payment_method: paymentMethod, tax, discount, items };
+        const formData = { 
+            customer: parseInt(customer), 
+            payment_method: paymentMethod, 
+            tax, 
+            discount, 
+            items 
+        };
+        
+        // Add credit-specific fields if applicable
+        if (paymentMethod === 'credit' && dueDate) {
+            formData.due_date = dueDate;
+        }
+        
+        return formData;
     }
 
     editSale(saleId) {

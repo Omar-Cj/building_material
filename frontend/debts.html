@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debts Management - BuildMat</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="src/css/styles.css" />
+    <link rel="stylesheet" href="src/css/debts.css" />
+  </head>
+  <body>
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-building"></i> NurBuild</h2>
+        <p>Management System</p>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="inventory.html" class="nav-link" data-page="inventory">
+            <i class="fas fa-boxes"></i>
+            Inventory
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="sales.html" class="nav-link" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            Sales
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="purchases.html" class="nav-link" data-page="purchases">
+            <i class="fas fa-shopping-cart"></i>
+            Purchases
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="expenses.html" class="nav-link" data-page="expenses">
+            <i class="fas fa-receipt"></i>
+            Expenses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="suppliers.html" class="nav-link" data-page="suppliers">
+            <i class="fas fa-truck"></i>
+            Suppliers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="customers.html" class="nav-link" data-page="customers">
+            <i class="fas fa-users"></i>
+            Customers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="debts.html"
+            class="nav-link active"
+            data-page="debts"
+          >
+            <i class="fas fa-credit-card"></i>
+            Debts
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <i class="fas fa-file-alt"></i>
+            Reports
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="main-content" id="mainContent">
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 15px">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title">Debts Management</h1>
+        </div>
+        <div class="user-actions">
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Debt Summary Section -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Debt Summary</h2>
+          <div class="summary-actions">
+            <button class="btn btn-success" id="materialsAnalysisBtn">
+              <i class="fas fa-boxes"></i>
+              Materials Analysis
+            </button>
+            <button class="btn btn-warning" id="exportReportBtn">
+              <i class="fas fa-file-pdf"></i>
+              Export Report
+            </button>
+            <button class="btn btn-secondary" id="exportCustomerBtn">
+              <i class="fas fa-user-edit"></i>
+              Customer Export
+            </button>
+            <button class="btn btn-info" id="refreshSummaryBtn">
+              <i class="fas fa-sync-alt"></i>
+              Refresh
+            </button>
+          </div>
+        </div>
+        
+        <div class="summary-grid">
+          <div class="summary-card total-debts">
+            <div class="summary-icon">
+              <i class="fas fa-list"></i>
+            </div>
+            <div class="summary-content">
+              <h3 id="totalDebtsCount">0</h3>
+              <p>Total Debts</p>
+            </div>
+          </div>
+          
+          <div class="summary-card total-amount">
+            <div class="summary-icon">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="summary-content">
+              <h3 id="totalAmount">$0.00</h3>
+              <p>Total Amount</p>
+            </div>
+          </div>
+          
+          <div class="summary-card outstanding">
+            <div class="summary-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="summary-content">
+              <h3 id="outstandingAmount">$0.00</h3>
+              <p>Outstanding</p>
+            </div>
+          </div>
+          
+          <div class="summary-card overdue">
+            <div class="summary-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="summary-content">
+              <h3 id="overdueCount">0</h3>
+              <p>Overdue Debts</p>
+            </div>
+          </div>
+          
+          <div class="summary-card collection-rate">
+            <div class="summary-icon">
+              <i class="fas fa-percentage"></i>
+            </div>
+            <div class="summary-content">
+              <h3 id="collectionRate">0%</h3>
+              <p>Collection Rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Debts Management Section -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Debt Management</h2>
+          <div class="debt-actions">
+            <button class="btn btn-success" id="addDebtBtn">
+              <i class="fas fa-plus"></i>
+              Add Debt
+            </button>
+            <button class="btn btn-primary" id="recordPaymentBtn">
+              <i class="fas fa-money-bill-wave"></i>
+              Record Payment
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search by customer name, phone, or notes..."
+            />
+          </div>
+          <select class="filter-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+            <option value="partially_paid">Partially Paid</option>
+            <option value="paid">Paid</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select class="filter-select" id="priorityFilter">
+            <option value="">All Priority</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+          <input type="date" class="filter-select" id="dueDateFilter" />
+        </div>
+
+        <!-- Debts Table -->
+        <div class="table-container">
+          <table class="debts-table" id="debtsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Total Amount</th>
+                <th>Paid Amount</th>
+                <th>Remaining</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="debtsTableBody">
+              <!-- Dynamic content will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No Data Message -->
+        <div class="no-data" id="noData" style="display: none">
+          <i class="fas fa-inbox"></i>
+          <p>No debts found.</p>
+        </div>
+
+        <!-- Loading Message -->
+        <div class="loading" id="loading" style="display: none">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading debts...</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <button class="pagination-btn" id="prevBtn" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span id="pageInfo">Page 1 of 1</span>
+          <button class="pagination-btn" id="nextBtn" disabled>
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Add/Edit Debt Modal -->
+    <div class="modal" id="debtModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="debtModalTitle">Add New Debt</h3>
+          <button class="close-btn" id="closeDebtModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="debtForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="customer">Customer *</label>
+              <select class="form-input" id="customer" name="customer" required>
+                <option value="">Select Customer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="totalAmount">Total Amount *</label>
+              <input
+                type="number"
+                class="form-input"
+                id="totalAmount"
+                name="totalAmount"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="dueDate">Due Date *</label>
+              <input type="date" class="form-input" id="dueDate" name="dueDate" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="priority">Priority</label>
+              <select class="form-input" id="priority" name="priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="interestRate">Interest Rate (%)</label>
+              <input
+                type="number"
+                class="form-input"
+                id="interestRate"
+                name="interestRate"
+                min="0"
+                max="100"
+                step="0.01"
+                value="0"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="paymentTerms">Payment Terms</label>
+              <input
+                type="text"
+                class="form-input"
+                id="paymentTerms"
+                name="paymentTerms"
+                placeholder="e.g., Net 30 days"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label" for="notes">Notes</label>
+              <textarea
+                class="form-input form-textarea"
+                id="notes"
+                name="notes"
+                rows="3"
+                placeholder="Additional notes about this debt..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelDebtBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="saveDebtBtn">
+              Save Debt
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Payment Record Modal -->
+    <div class="modal" id="paymentModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Record Payment</h3>
+          <button class="close-btn" id="closePaymentModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="paymentForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="paymentDebt">Debt *</label>
+              <select class="form-input" id="paymentDebt" name="paymentDebt" required>
+                <option value="">Select Debt</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="paymentAmount">Amount *</label>
+              <input
+                type="number"
+                class="form-input"
+                id="paymentAmount"
+                name="paymentAmount"
+                min="0.01"
+                step="0.01"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="paymentMethod">Payment Method</label>
+              <select class="form-input" id="paymentMethod" name="paymentMethod">
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="check">Check</option>
+                <option value="credit_card">Credit Card</option>
+                <option value="zaad">Zaad</option>
+                <option value="edahab">Edahab</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="paymentDate">Payment Date</label>
+              <input type="datetime-local" class="form-input" id="paymentDate" name="paymentDate" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="referenceNumber">Reference Number</label>
+              <input
+                type="text"
+                class="form-input"
+                id="referenceNumber"
+                name="referenceNumber"
+                placeholder="Bank ref, check number, etc."
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="receiptNumber">Receipt Number</label>
+              <input
+                type="text"
+                class="form-input"
+                id="receiptNumber"
+                name="receiptNumber"
+                placeholder="Internal receipt number"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label" for="paymentNotes">Notes</label>
+              <textarea
+                class="form-input form-textarea"
+                id="paymentNotes"
+                name="paymentNotes"
+                rows="3"
+                placeholder="Additional notes about this payment..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelPaymentBtn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="savePaymentBtn">
+              Record Payment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal confirm-modal" id="confirmModal">
+      <div class="modal-content">
+        <div class="confirm-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <p class="confirm-message" id="confirmMessage">
+          Are you sure you want to perform this action?
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
+          <button class="btn btn-danger" id="confirmAction">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="src/js/pages/debts.js"></script>
+  </body>
+</html>

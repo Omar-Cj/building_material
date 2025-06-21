@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug</title>
+</head>
+<body>
+    <h1>API Debug Tool</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        import apiClient from './src/js/apiClient.js';
+        
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            results.innerHTML += `<p>${message}</p>`;
+        }
+        
+        async function testAPIs() {
+            log('Starting API tests...');
+            
+            // Check token
+            const token = localStorage.getItem('token');
+            log(`Token present: ${!!token}`);
+            if (token) {
+                log(`Token length: ${token.length}`);
+            }
+            
+            // Test each API endpoint
+            try {
+                log('Testing customers API...');
+                const customers = await apiClient.get('/customers/customers/');
+                log(`Customers API success. Response type: ${typeof customers}`);
+                log(`Customers data: ${JSON.stringify(customers).substring(0, 100)}...`);
+            } catch (error) {
+                log(`Customers API error: ${error.message}`);
+            }
+            
+            try {
+                log('Testing debts API...');
+                const debts = await apiClient.get('/debts/debts/');
+                log(`Debts API success. Response type: ${typeof debts}`);
+                log(`Debts data: ${JSON.stringify(debts).substring(0, 100)}...`);
+            } catch (error) {
+                log(`Debts API error: ${error.message}`);
+            }
+            
+            try {
+                log('Testing summary API...');
+                const summary = await apiClient.get('/debts/debts/summary/');
+                log(`Summary API success. Response type: ${typeof summary}`);
+                log(`Summary data: ${JSON.stringify(summary)}`);
+            } catch (error) {
+                log(`Summary API error: ${error.message}`);
+            }
+        }
+        
+        testAPIs();
+    </script>
+</body>
+</html>

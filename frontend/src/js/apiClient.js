@@ -32,11 +32,25 @@ const apiClient = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "API request failed");
+      let errorMessage = "API request failed";
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.detail || `HTTP ${response.status}: ${response.statusText}`;
+      } catch (parseError) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Handle different content types
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else if (options.responseType === 'blob') {
+      return { data: await response.blob() };
+    } else {
+      return response.text();
+    }
   },
 
   get(endpoint, options = {}) {
