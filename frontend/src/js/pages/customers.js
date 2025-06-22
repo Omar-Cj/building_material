@@ -117,7 +117,7 @@ class CustomerManager {
                             <td><span class="status-badge status-${customer.status}">${this.formatStatus(customer.status)}</span></td>
                             <td>₦${this.formatMoney(customer.credit_limit || 0)}</td>
                             <td class="actions-cell">
-                                <button class="btn btn-sm btn-primary" onclick="customerManager.editCustomer(${customer.id})" title="Edit">
+                                <button class="btn btn-sm btn-warning" onclick="customerManager.editCustomer(${customer.id})" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button class="btn btn-sm btn-danger" onclick="customerManager.deleteCustomer(${customer.id})" title="Delete">

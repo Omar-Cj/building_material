@@ -212,14 +212,14 @@ class SuppliersManager {
                     </span>
                 </td>
                 <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="suppliersManager.viewSupplier(${supplier.id})" title="View">
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-info btn-sm" onclick="suppliersManager.viewSupplier(${supplier.id})" title="View">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-outline-warning" onclick="suppliersManager.editSupplier(${supplier.id})" title="Edit">
+                        <button class="btn btn-sm btn-warning" onclick="suppliersManager.editSupplier(${supplier.id})" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-outline-danger" onclick="suppliersManager.deleteSupplier(${supplier.id})" title="Delete">
+                        <button class="btn btn-sm btn-danger" onclick="suppliersManager.deleteSupplier(${supplier.id})" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -275,7 +275,19 @@ class SuppliersManager {
         this.currentSupplier = supplier;
         this.isEditing = !!supplier;
 
-        const modal = new bootstrap.Modal(document.getElementById('supplierModal'));
+        // Ensure any existing modal is properly closed first
+        const existingModal = bootstrap.Modal.getInstance(document.getElementById('supplierModal'));
+        if (existingModal) {
+            existingModal.dispose();
+        }
+
+        // Create modal with explicit backdrop configuration
+        const modal = new bootstrap.Modal(document.getElementById('supplierModal'), {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+
         const modalTitle = document.getElementById('supplierModalLabel');
 
         if (modalTitle) {
@@ -324,6 +336,14 @@ class SuppliersManager {
         this.currentSupplier = null;
         this.isEditing = false;
         this.isSubmitting = false;
+
+        // Additional cleanup for modal backdrop issues
+        setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+        }, 100);
     }
 
     async handleFormSubmit(e) {
@@ -363,6 +383,13 @@ class SuppliersManager {
             const modal = bootstrap.Modal.getInstance(document.getElementById('supplierModal'));
             if (modal) {
                 modal.hide();
+                // Ensure backdrop is properly removed
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                }, 150);
             }
 
             await this.loadSuppliers();
@@ -487,6 +514,13 @@ class SuppliersManager {
         // Clean up
         document.getElementById('supplierDetailsModal').addEventListener('hidden.bs.modal', function () {
             this.remove();
+            // Additional cleanup for modal backdrop
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('padding-right');
+            }, 100);
         });
     }
 
@@ -588,6 +622,13 @@ class SuppliersManager {
 
             document.getElementById('confirmModal').addEventListener('hidden.bs.modal', function () {
                 this.remove();
+                // Additional cleanup for modal backdrop
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                }, 100);
             });
 
             modal.show();

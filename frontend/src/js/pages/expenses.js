@@ -181,7 +181,7 @@ class ExpenseManager {
                     </span>
                 </td>
                 <td>
-                    <div class="btn-group" role="group">
+                    <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-warning" onclick="expenseManager.editExpense(${expense.id})" title="Edit Expense">
                             <i class="fas fa-edit"></i>
                         </button>
