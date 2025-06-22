@@ -5,7 +5,7 @@ class DebtManager {
         this.debts = [];
         this.filteredDebts = [];
         this.currentPage = 1;
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 6;
         this.totalPages = 1;
         this.currentDebt = null;
         this.isEditing = false;

@@ -5,7 +5,7 @@ class CustomerManager {
         this.customers = [];
         this.filteredCustomers = [];
         this.currentPage = 1;
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 6;
         this.totalPages = 1;
         this.currentCustomer = null;
         this.isEditing = false;

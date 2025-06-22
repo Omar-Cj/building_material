@@ -5,7 +5,13 @@ class InventoryManager {
     constructor() {
         this.data = {
             materials: [], categories: [], units: [], adjustments: [],
-            currentTab: 'materials', pagination: { page: 1, limit: 10, total: 0 },
+            currentTab: 'materials', 
+            pagination: {
+                materials: { page: 1, limit: 6, total: 0 },
+                categories: { page: 1, limit: 6, total: 0 },
+                units: { page: 1, limit: 6, total: 0 },
+                adjustments: { page: 1, limit: 6, total: 0 }
+            },
             filters: { search: '', category: '', stock: '', type: '', date: '' }
         };
         this.pendingAction = null;
@@ -82,8 +88,8 @@ class InventoryManager {
             let url = endpoint;
             if (paginated) {
                 const params = new URLSearchParams({
-                    page: this.data.pagination.page,
-                    limit: this.data.pagination.limit,
+                    page: this.data.pagination[type].page,
+                    limit: this.data.pagination[type].limit,
                     search: this.data.filters.search,
                     ...(type === 'materials' && { 
                         category: this.data.filters.category,
@@ -98,7 +104,12 @@ class InventoryManager {
 
             const response = await apiClient.get(url);
             this.data[type] = response.results || response;
-            if (paginated) this.data.pagination.total = response.count || this.data[type].length;
+            if (paginated) {
+                this.data.pagination[type].total = response.count || this.data[type].length;
+            } else {
+                // For non-paginated data, set total for pagination
+                this.data.pagination[type].total = this.data[type].length;
+            }
             
             if (type === this.data.currentTab) this.renderCurrentTab();
         } catch (error) {
@@ -119,11 +130,16 @@ class InventoryManager {
     renderTable(type, rowsHtml) {
         const tbody = document.getElementById(`${type}-table-body`);
         if (tbody) tbody.innerHTML = rowsHtml;
-        if (['materials', 'adjustments'].includes(type)) this.updatePagination(type);
+        this.updatePagination(type);
     }
 
     getMaterialRows() {
-        return this.data.materials.map(m => `
+        // Apply pagination to materials
+        const startIndex = (this.data.pagination.materials.page - 1) * this.data.pagination.materials.limit;
+        const endIndex = startIndex + this.data.pagination.materials.limit;
+        const pageItems = this.data.materials.slice(startIndex, endIndex);
+        
+        return pageItems.map(m => `
             <tr>
                 <td><div class="material-info"><strong>${m.name}</strong>
                     ${m.brand ? `<small class="text-muted">${m.brand}</small>` : ''}</div></td>
@@ -139,7 +155,12 @@ class InventoryManager {
     }
 
     getCategoryRows() {
-        return this.data.categories.map(c => `
+        // Apply pagination to categories
+        const startIndex = (this.data.pagination.categories.page - 1) * this.data.pagination.categories.limit;
+        const endIndex = startIndex + this.data.pagination.categories.limit;
+        const pageItems = this.data.categories.slice(startIndex, endIndex);
+        
+        return pageItems.map(c => `
             <tr>
                 <td><strong>${c.name}</strong></td>
                 <td>${c.description || '-'}</td>
@@ -152,7 +173,12 @@ class InventoryManager {
     }
 
     getUnitRows() {
-        return this.data.units.map(u => `
+        // Apply pagination to units
+        const startIndex = (this.data.pagination.units.page - 1) * this.data.pagination.units.limit;
+        const endIndex = startIndex + this.data.pagination.units.limit;
+        const pageItems = this.data.units.slice(startIndex, endIndex);
+        
+        return pageItems.map(u => `
             <tr>
                 <td><strong>${u.name}</strong></td>
                 <td><span class="badge badge-info">${u.abbreviation}</span></td>
@@ -164,7 +190,12 @@ class InventoryManager {
     }
 
     getAdjustmentRows() {
-        return this.data.adjustments.map(a => `
+        // Apply pagination to adjustments
+        const startIndex = (this.data.pagination.adjustments.page - 1) * this.data.pagination.adjustments.limit;
+        const endIndex = startIndex + this.data.pagination.adjustments.limit;
+        const pageItems = this.data.adjustments.slice(startIndex, endIndex);
+        
+        return pageItems.map(a => `
             <tr>
                 <td>${new Date(a.date).toLocaleDateString()}</td>
                 <td>${a.material_name} (${a.material_sku})</td>
@@ -498,14 +529,49 @@ class InventoryManager {
     }
 
     updatePagination(type) {
-        const start = (this.data.pagination.page - 1) * this.data.pagination.limit + 1;
-        const end = Math.min(start + this.data.pagination.limit - 1, this.data.pagination.total);
+        const pagination = this.data.pagination[type];
+        const paginationContainer = document.getElementById(`${type}-pagination`);
         
-        const showing = document.getElementById(`${type}-showing`);
-        const total = document.getElementById(`${type}-total`);
+        // Generate pagination buttons
+        if (paginationContainer) {
+            const totalPages = Math.ceil(pagination.total / pagination.limit);
+            let buttonsHtml = '';
+            
+            // Previous button
+            const prevDisabled = pagination.page <= 1 ? 'disabled' : '';
+            buttonsHtml += `<button class="pagination-btn" ${prevDisabled} onclick="inventoryManager.changePage('${type}', -1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>`;
+            
+            // Page info
+            buttonsHtml += `<span id="pageInfo">Page ${pagination.page} of ${totalPages}</span>`;
+            
+            // Next button
+            const nextDisabled = pagination.page >= totalPages ? 'disabled' : '';
+            buttonsHtml += `<button class="pagination-btn" ${nextDisabled} onclick="inventoryManager.changePage('${type}', 1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>`;
+            
+            paginationContainer.innerHTML = buttonsHtml;
+        }
+    }
+
+    changePage(type, direction) {
+        const pagination = this.data.pagination[type];
+        const totalPages = Math.ceil(pagination.total / pagination.limit);
+        const newPage = pagination.page + direction;
         
-        if (showing) showing.textContent = `${start}-${end}`;
-        if (total) total.textContent = this.data.pagination.total;
+        if (newPage >= 1 && newPage <= totalPages) {
+            pagination.page = newPage;
+            
+            // For paginated data (materials and adjustments), reload from API
+            if (['materials', 'adjustments'].includes(type)) {
+                this.loadData(type, type === 'materials' ? '/inventory/materials/' : '/inventory/stock-adjustments/', true);
+            } else {
+                // For non-paginated data (categories and units), just re-render
+                this.renderCurrentTab();
+            }
+        }
     }
 
     toggleSidebar() {

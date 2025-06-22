@@ -7,7 +7,7 @@ class SuppliersManager {
         this.currentSupplier = null;
         this.isEditing = false;
         this.currentPage = 1;
-        this.pageSize = 10;
+        this.pageSize = 6;
         this.totalSuppliers = 0;
         this.searchQuery = '';
         this.filterActive = 'all';
@@ -236,55 +236,28 @@ class SuppliersManager {
 
         if (totalPages <= 1) {
             paginationContainer.innerHTML = `
-                <div class="d-flex justify-content-center mt-3">
-                    <small class="text-muted">Showing ${this.totalSuppliers} suppliers</small>
+                <div class="pagination">
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             `;
             return;
         }
 
-        let paginationHTML = '<ul class="pagination justify-content-center">';
-
-        // Previous button
-        paginationHTML += `
-            <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
-                <button class="page-link" onclick="suppliersManager.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>
+        let paginationHTML = `
+            <div class="pagination">
+                <button class="pagination-btn" onclick="suppliersManager.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>
                     <i class="fas fa-chevron-left"></i>
                 </button>
-            </li>
-        `;
-
-        // Page numbers
-        const startPage = Math.max(1, this.currentPage - 2);
-        const endPage = Math.min(totalPages, this.currentPage + 2);
-
-        for (let i = startPage; i <= endPage; i++) {
-            paginationHTML += `
-                <li class="page-item ${i === this.currentPage ? 'active' : ''}">
-                    <button class="page-link" onclick="suppliersManager.changePage(${i})">${i}</button>
-                </li>
-            `;
-        }
-
-        // Next button
-        paginationHTML += `
-            <li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
-                <button class="page-link" onclick="suppliersManager.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>
+                <span id="pageInfo">Page ${this.currentPage} of ${totalPages}</span>
+                <button class="pagination-btn" onclick="suppliersManager.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>
                     <i class="fas fa-chevron-right"></i>
                 </button>
-            </li>
-        `;
-
-        paginationHTML += '</ul>';
-
-        // Add pagination info
-        paginationHTML += `
-            <div class="d-flex justify-content-center mt-2">
-                <small class="text-muted">
-                    Showing ${(this.currentPage - 1) * this.pageSize + 1} to 
-                    ${Math.min(this.currentPage * this.pageSize, this.totalSuppliers)} of 
-                    ${this.totalSuppliers} suppliers
-                </small>
             </div>
         `;
 

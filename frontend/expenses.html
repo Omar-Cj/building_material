@@ -209,22 +209,14 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination-controls">
-          <div>
-            <span id="pageInfo" class="text-muted"
-              >Showing 0-0 of 0 expenses</span
-            >
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-outline-primary btn-sm" id="prevPage">
-              <i class="fas fa-chevron-left"></i>
-              Previous
-            </button>
-            <button class="btn btn-outline-primary btn-sm" id="nextPage">
-              Next
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
+        <div class="pagination" id="pagination">
+          <button class="pagination-btn" id="prevPage" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span id="pageInfo">Page 1 of 1</span>
+          <button class="pagination-btn" id="nextPage" disabled>
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
       </div>
     </main>

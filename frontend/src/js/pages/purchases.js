@@ -5,6 +5,10 @@ class PurchaseManager {
         this.purchases = [];
         this.suppliers = [];
         this.materials = [];
+        this.filteredPurchases = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 6;
+        this.totalPages = 1;
         this.currentEditId = null;
         this.init();
     }
@@ -28,6 +32,10 @@ class PurchaseManager {
             document.getElementById('mainContent').classList.toggle('expanded');
         });
 
+        // Pagination
+        document.getElementById('prevBtn')?.addEventListener('click', () => this.changePage(-1));
+        document.getElementById('nextBtn')?.addEventListener('click', () => this.changePage(1));
+        
         // Modal events
         document.getElementById('purchaseModal').addEventListener('hidden.bs.modal', () => this.resetForm());
         document.getElementById('confirmDeleteBtn').addEventListener('click', () => this.confirmDelete());
@@ -42,6 +50,7 @@ class PurchaseManager {
             ]);
             
             this.purchases = purchasesData.results || purchasesData;
+            this.filteredPurchases = [...this.purchases];
             this.suppliers = suppliersData.results || suppliersData;
             this.materials = materialsData.results || materialsData;
             
@@ -83,12 +92,18 @@ class PurchaseManager {
         const tbody = document.getElementById('purchaseTableBody');
         tbody.innerHTML = '';
 
-        if (this.purchases.length === 0) {
+        if (this.filteredPurchases.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No purchase orders found</td></tr>';
+            this.updatePagination();
             return;
         }
 
-        this.purchases.forEach(purchase => {
+        // Apply pagination
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageItems = this.filteredPurchases.slice(startIndex, endIndex);
+
+        pageItems.forEach(purchase => {
             const supplier = this.suppliers.find(s => s.id === purchase.supplier);
             const totalAmount = purchase.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             const itemCount = purchase.items.length;
@@ -116,6 +131,7 @@ class PurchaseManager {
                 </tr>
             `;
         });
+        this.updatePagination();
     }
 
     filterTable() {
@@ -123,7 +139,7 @@ class PurchaseManager {
         const statusFilter = document.getElementById('statusFilter').value;
         const supplierFilter = document.getElementById('supplierFilter').value;
 
-        const filtered = this.purchases.filter(purchase => {
+        this.filteredPurchases = this.purchases.filter(purchase => {
             const supplier = this.suppliers.find(s => s.id === purchase.supplier);
             const supplierName = supplier ? supplier.name.toLowerCase() : '';
             const poNumber = `PO-${String(purchase.id).padStart(4, '0')}`.toLowerCase();
@@ -135,46 +151,28 @@ class PurchaseManager {
             return matchesSearch && matchesStatus && matchesSupplier;
         });
 
-        this.renderFilteredTable(filtered);
+        this.currentPage = 1; // Reset to first page when filtering
+        this.renderTable();
     }
 
-    renderFilteredTable(filtered) {
-        const tbody = document.getElementById('purchaseTableBody');
-        tbody.innerHTML = '';
+    updatePagination() {
+        this.totalPages = Math.ceil(this.filteredPurchases.length / this.itemsPerPage);
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
+        if (pageInfo) pageInfo.textContent = `Page ${this.currentPage} of ${this.totalPages}`;
+    }
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No matching purchase orders found</td></tr>';
-            return;
+    changePage(direction) {
+        const newPage = this.currentPage + direction;
+        if (newPage >= 1 && newPage <= this.totalPages) {
+            this.currentPage = newPage;
+            this.renderTable();
         }
-
-        filtered.forEach(purchase => {
-            const supplier = this.suppliers.find(s => s.id === purchase.supplier);
-            const totalAmount = purchase.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const itemCount = purchase.items.length;
-            
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>PO-${String(purchase.id).padStart(4, '0')}</strong></td>
-                    <td>${supplier ? supplier.name : 'Unknown'}</td>
-                    <td><span class="badge bg-info text-dark">${itemCount} item${itemCount !== 1 ? 's' : ''}</span></td>
-                    <td><strong>$${totalAmount.toFixed(2)}</strong></td>
-                    <td><span class="badge ${this.getStatusClass(purchase.status)}">${purchase.status}</span></td>
-                    <td>${new Date(purchase.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning me-1" onclick="purchaseManager.editPurchase(${purchase.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger me-1" onclick="purchaseManager.deletePurchase(${purchase.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        ${purchase.status === 'pending' ? 
-                            `<button class="btn btn-sm btn-success" onclick="purchaseManager.receivePurchase(${purchase.id})">
-                                <i class="fas fa-check"></i>
-                            </button>` : ''}
-                    </td>
-                </tr>
-            `;
-        });
     }
 
     getStatusClass(status) {

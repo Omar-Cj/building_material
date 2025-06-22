@@ -7,7 +7,7 @@ class ExpenseManager {
         this.filteredExpenses = [];
         this.users = []; // Store users for paid_by dropdown
         this.currentPage = 1;
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 6;
         this.currentEditId = null;
         this.currentDeleteId = null;
         this.init();
@@ -424,11 +424,8 @@ class ExpenseManager {
 
     updatePagination() {
         const totalPages = Math.ceil(this.filteredExpenses.length / this.itemsPerPage);
-        const startItem = (this.currentPage - 1) * this.itemsPerPage + 1;
-        const endItem = Math.min(this.currentPage * this.itemsPerPage, this.filteredExpenses.length);
         
-        document.getElementById('pageInfo').textContent = 
-            `Showing ${startItem}-${endItem} of ${this.filteredExpenses.length} expenses`;
+        document.getElementById('pageInfo').textContent = `Page ${this.currentPage} of ${totalPages}`;
         
         const prevBtn = document.getElementById('prevPage');
         const nextBtn = document.getElementById('nextPage');

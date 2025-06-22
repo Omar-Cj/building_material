@@ -8,6 +8,7 @@ class SalesManager {
         this.materials = [];
         this.filteredSales = [];
         this.currentPage = 1;
+        this.itemsPerPage = 6;
         this.totalPages = 1;
         this.init();
     }
@@ -175,6 +176,17 @@ class SalesManager {
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Pagination -->
+                    <div class="pagination" id="pagination">
+                        <button class="pagination-btn" id="prevBtn" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="pageInfo">Page 1 of 1</span>
+                        <button class="pagination-btn" id="nextBtn" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -216,6 +228,16 @@ class SalesManager {
                 this.showSaleModal();
             });
         }
+        
+        // Pagination controls
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => this.changePage(-1));
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.changePage(1));
+        }
     }
 
     renderSalesTable() {
@@ -224,7 +246,12 @@ class SalesManager {
 
         tbody.innerHTML = '';
 
-        this.filteredSales.forEach(sale => {
+        // Apply pagination
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageItems = this.filteredSales.slice(startIndex, endIndex);
+
+        pageItems.forEach(sale => {
             const row = document.createElement('tr');
             const customer = this.customers.find(c => c.id === sale.customer);
             const itemCount = sale.items ? sale.items.length : 0;
@@ -265,6 +292,7 @@ class SalesManager {
         });
 
         this.updateStats();
+        this.updatePagination();
     }
 
     updateStats() {
@@ -807,7 +835,28 @@ class SalesManager {
         }
         
         this.filteredSales = filtered;
+        this.currentPage = 1; // Reset to first page when filtering
         this.renderSalesTable();
+    }
+
+    updatePagination() {
+        this.totalPages = Math.ceil(this.filteredSales.length / this.itemsPerPage);
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
+        if (pageInfo) pageInfo.textContent = `Page ${this.currentPage} of ${this.totalPages}`;
+    }
+
+    changePage(direction) {
+        const newPage = this.currentPage + direction;
+        if (newPage >= 1 && newPage <= this.totalPages) {
+            this.currentPage = newPage;
+            this.renderSalesTable();
+        }
     }
 
     showAlert(message, type) {
@@ -866,6 +915,42 @@ const additionalCSS = `
         margin: 0;
         color: #7f8c8d;
         font-weight: 500;
+    }
+    
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 30px;
+        gap: 10px;
+    }
+
+    .pagination-btn {
+        padding: 10px 15px;
+        border: 2px solid #e1e8ed;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    #pageInfo {
+        font-weight: 500;
+        color: #2c3e50;
+        padding: 0 15px;
     }
 `;
 
