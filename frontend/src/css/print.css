@@ -1,0 +1,613 @@
+/* Print-optimized CSS for Debt Reports */
+
+/* Hide all interactive elements during print */
+@media print {
+    .sidebar,
+    .nav-menu,
+    .btn,
+    .button,
+    .export-btn,
+    .modal,
+    .modal-backdrop,
+    .alert,
+    .pagination,
+    .search-bar,
+    .filter-controls,
+    .toolbar,
+    .header-controls,
+    .action-buttons,
+    .floating-btn {
+        display: none !important;
+    }
+    
+    /* Reset body styling for print */
+    body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+        font-family: 'Times New Roman', serif !important;
+        font-size: 12pt;
+        line-height: 1.4;
+        color: black !important;
+    }
+    
+    /* Main content adjustments */
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    /* Print report container */
+    .print-report {
+        display: block !important;
+        margin: 0;
+        padding: 20mm;
+        background: white;
+        box-shadow: none;
+        border: none;
+    }
+    
+    /* Page breaks */
+    .page-break {
+        page-break-after: always;
+    }
+    
+    .page-break-before {
+        page-break-before: always;
+    }
+    
+    .no-page-break {
+        page-break-inside: avoid;
+    }
+}
+
+/* Print report styles (visible on screen and print) */
+.print-report {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.print-report.show {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.print-report .print-content {
+    background: white;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    max-width: 210mm;
+    min-height: 297mm;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin: 20px 0;
+}
+
+/* Company header */
+.print-report .company-header {
+    text-align: center;
+    border-bottom: 3px solid #2c3e50;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.print-report .company-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.print-report .company-subtitle {
+    font-size: 16px;
+    color: #7f8c8d;
+    margin: 5px 0 0 0;
+}
+
+.print-report .report-title {
+    font-size: 22px;
+    color: #34495e;
+    margin: 20px 0 10px 0;
+    text-align: center;
+}
+
+.print-report .report-date {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+/* Customer information section */
+.print-report .customer-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    border-left: 4px solid #3498db;
+}
+
+.print-report .customer-info h3 {
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+}
+
+.print-report .customer-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.print-report .customer-detail {
+    margin-bottom: 8px;
+}
+
+.print-report .customer-detail strong {
+    color: #34495e;
+}
+
+/* Summary section */
+.print-report .summary-section {
+    margin-bottom: 30px;
+}
+
+.print-report .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.print-report .summary-card {
+    background: #ffffff;
+    border: 2px solid #ecf0f1;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.print-report .summary-card h4 {
+    color: #7f8c8d;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.print-report .summary-card .amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.print-report .summary-card.outstanding .amount {
+    color: #e74c3c;
+}
+
+.print-report .summary-card.paid .amount {
+    color: #27ae60;
+}
+
+/* Tables */
+.print-report table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+    font-size: 11px;
+}
+
+.print-report table th {
+    background: #34495e;
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.print-report table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #ecf0f1;
+    vertical-align: top;
+}
+
+.print-report table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.print-report table tr:hover {
+    background: #e8f4f8;
+}
+
+/* Status badges */
+.print-report .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.print-report .status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.print-report .status-badge.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.print-report .status-badge.overdue {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Section headers */
+.print-report .section-header {
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+/* Amount formatting */
+.print-report .amount-positive {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.print-report .amount-negative {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.print-report .amount-neutral {
+    color: #34495e;
+    font-weight: 600;
+}
+
+/* Footer */
+.print-report .report-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #ecf0f1;
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.print-report .generated-info {
+    margin-top: 10px;
+}
+
+/* Print button styling */
+.print-controls {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.print-controls .btn-print {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: background 0.3s ease;
+}
+
+.print-controls .btn-print:hover {
+    background: #2980b9;
+}
+
+.print-controls .btn-close {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+.print-controls .btn-close:hover {
+    background: #7f8c8d;
+}
+
+/* Responsive adjustments for screen viewing */
+@media screen and (max-width: 768px) {
+    .print-report {
+        margin: 10px;
+        padding: 20px;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .print-report .customer-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .print-report .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .print-report table {
+        font-size: 10px;
+    }
+    
+    .print-report table th,
+    .print-report table td {
+        padding: 6px 4px;
+    }
+}
+
+/* Ensure proper text rendering */
+@media print {
+    .print-report * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+}
+
+/* Button groups for export options */
+.btn-group {
+    display: inline-flex;
+    vertical-align: middle;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.btn-group .btn {
+    position: relative;
+    flex: 1 1 auto;
+    margin: 0;
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.btn-group .btn:not(:first-child) {
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-group .btn:hover {
+    z-index: 1;
+}
+
+/* Outline button styles */
+.btn-outline-warning {
+    color: #f39c12;
+    border-color: #f39c12;
+    background-color: transparent;
+}
+
+.btn-outline-warning:hover {
+    color: #fff;
+    background-color: #f39c12;
+    border-color: #f39c12;
+}
+
+.btn-outline-primary {
+    color: #3498db;
+    border-color: #3498db;
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-outline-secondary {
+    color: #95a5a6;
+    border-color: #95a5a6;
+    background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+}
+
+/* Print report overlay styling */
+.print-report {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.print-report .print-content {
+    max-width: 210mm;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced button styling for actions */
+.actions-cell .btn-group {
+    gap: 2px;
+}
+
+.actions-cell .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Grid layout for print report sections */
+.debt-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.summary-item .label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.summary-item .value {
+    font-weight: bold;
+    color: #34495e;
+}
+
+/* Enhanced modal styles */
+.customer-export-modal {
+    max-width: 600px;
+}
+
+.export-options {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.2);
+}
+
+.info-card {
+    background: #e8f4fd;
+    border: 1px solid #bee5eb;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.info-card h4 {
+    margin: 0 0 10px 0;
+    color: #0c5460;
+}
+
+/* Enhanced table styling for print reports */
+.print-report table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.print-report table th:first-child {
+    border-top-left-radius: 6px;
+}
+
+.print-report table th:last-child {
+    border-top-right-radius: 6px;
+}
+
+.print-report table tr:last-child td:first-child {
+    border-bottom-left-radius: 6px;
+}
+
+.print-report table tr:last-child td:last-child {
+    border-bottom-right-radius: 6px;
+}
+
+/* Status indicators */
+.overdue-indicator {
+    display: inline-block;
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Responsive design for smaller screens */
+@media screen and (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px;
+        margin-bottom: 5px;
+    }
+    
+    .btn-group .btn:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .summary-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .debt-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

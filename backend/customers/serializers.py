@@ -50,9 +50,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'customer_type', 'contact_person', 'email', 
                   'phone', 'alternative_phone', 'address', 'city', 'state', 
                   'postal_code', 'country', 'tax_id', 'credit_limit', 
-                  'outstanding_balance', 'payment_terms', 'status', 
-                  'registration_date', 'notes', 'created_at', 'updated_at', 
-                  'created_by', 'updated_by', 'user_account']
+                  'outstanding_balance', 'payment_terms', 'allow_debt', 'current_debt', 
+                  'debt_limit', 'debt_status', 'status', 'registration_date', 'notes', 
+                  'created_at', 'updated_at', 'created_by', 'updated_by', 'user_account']
         read_only_fields = ['created_at', 'updated_at', 'created_by', 
                             'updated_by', 'registration_date', 'outstanding_balance']
     

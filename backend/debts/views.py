@@ -483,7 +483,7 @@ class DebtViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def export_customer(self, request):
-        """Export all debts for a specific customer."""
+        """Export all debts for a specific customer as JSON data for printing."""
         try:
             # Check authentication
             if not request.user.is_authenticated:
@@ -511,155 +511,92 @@ class DebtViewSet(viewsets.ModelViewSet):
             
             debts = self.get_queryset().filter(customer=customer).select_related('sale').prefetch_related('sale__items__material', 'payments')
             
-            # Create PDF response
-            response = HttpResponse(content_type='application/pdf')
-            filename = f"customer_{customer.id}_debt_report_{timezone.now().strftime('%Y%m%d')}.pdf"
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            # Prepare customer information
+            customer_info = {
+                'id': customer.id,
+                'name': customer.name,
+                'phone': customer.phone,
+                'email': customer.email or 'N/A',
+                'customer_type': customer.get_customer_type_display(),
+                'credit_limit': float(customer.credit_limit or 0),
+                'outstanding_balance': float(customer.outstanding_balance or 0)
+            }
             
-            # Create PDF
-            buffer = io.BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.75*inch)
-            styles = getSampleStyleSheet()
-            elements = []
+            # Prepare debt summary
+            debt_summary = {
+                'total_debts': debts.count(),
+                'total_amount': 0,
+                'total_paid': 0,
+                'total_outstanding': 0
+            }
             
-            # Company Header
-            header_style = ParagraphStyle(
-                'CustomHeader',
-                parent=styles['Heading1'],
-                fontSize=20,
-                textColor=colors.darkblue,
-                spaceAfter=20,
-                alignment=1
-            )
-            title = Paragraph("NurBuild Management System", header_style)
-            subtitle = Paragraph(f"Customer Debt Report", styles['Heading2'])
-            elements.extend([title, subtitle, Spacer(1, 20)])
+            # Prepare detailed debt records
+            debt_records = []
+            materials_dict = {}
             
-            # Customer Information
-            customer_info = f"""
-            <b>Customer Information:</b><br/>
-            Name: {customer.name}<br/>
-            Phone: {customer.phone}<br/>
-            Email: {customer.email or 'N/A'}<br/>
-            Customer Type: {customer.get_customer_type_display()}<br/>
-            Credit Limit: ${customer.credit_limit or 0:,.2f}<br/>
-            Outstanding Balance: ${customer.outstanding_balance or 0:,.2f}
-            """
-            customer_para = Paragraph(customer_info, styles['Normal'])
-            elements.append(customer_para)
-            elements.append(Spacer(1, 20))
+            for debt in debts:
+                debt_summary['total_amount'] += float(debt.total_amount)
+                debt_summary['total_paid'] += float(debt.paid_amount)
+                debt_summary['total_outstanding'] += float(debt.remaining_amount)
+                
+                # Prepare payment history for this debt
+                payments = []
+                for payment in debt.payments.all():
+                    payments.append({
+                        'id': payment.id,
+                        'amount': float(payment.amount),
+                        'payment_method': payment.payment_method,
+                        'date': payment.created_at.strftime('%Y-%m-%d'),
+                        'notes': payment.notes or ''
+                    })
+                
+                # Add debt record
+                debt_records.append({
+                    'id': debt.id,
+                    'created_date': debt.created_at.strftime('%Y-%m-%d'),
+                    'due_date': debt.due_date.strftime('%Y-%m-%d'),
+                    'total_amount': float(debt.total_amount),
+                    'paid_amount': float(debt.paid_amount),
+                    'remaining_amount': float(debt.remaining_amount),
+                    'status': debt.get_status_display(),
+                    'notes': debt.notes or '',
+                    'payments': payments
+                })
+                
+                # Process materials for this debt
+                if debt.sale and debt.sale.items.exists():
+                    for item in debt.sale.items.all():
+                        material_name = item.material.name
+                        if material_name not in materials_dict:
+                            materials_dict[material_name] = {
+                                'sku': item.material.sku,
+                                'quantity': 0,
+                                'total_value': 0
+                            }
+                        materials_dict[material_name]['quantity'] += float(item.quantity)
+                        materials_dict[material_name]['total_value'] += float(item.quantity * item.price)
             
-            if debts.exists():
-                # Debt Summary
-                total_debts = debts.count()
-                total_amount = sum(debt.total_amount for debt in debts)
-                total_paid = sum(debt.paid_amount for debt in debts)
-                total_outstanding = sum(debt.remaining_amount for debt in debts)
-                
-                summary_info = f"""
-                <b>Debt Summary:</b><br/>
-                Total Debts: {total_debts}<br/>
-                Total Amount: ${total_amount:,.2f}<br/>
-                Total Paid: ${total_paid:,.2f}<br/>
-                <b>Total Outstanding: ${total_outstanding:,.2f}</b>
-                """
-                summary_para = Paragraph(summary_info, styles['Normal'])
-                elements.append(summary_para)
-                elements.append(Spacer(1, 20))
-                
-                # Detailed Debt List
-                debt_title = Paragraph("Detailed Debt Records", styles['Heading2'])
-                elements.append(debt_title)
-                elements.append(Spacer(1, 12))
-                
-                debt_data = [['Debt ID', 'Date', 'Amount', 'Paid', 'Outstanding', 'Due Date', 'Status']]
-                for debt in debts:
-                    debt_data.append([
-                        f"#{debt.id}",
-                        debt.created_at.strftime('%m/%d/%Y'),
-                        f"${debt.total_amount:,.2f}",
-                        f"${debt.paid_amount:,.2f}",
-                        f"${debt.remaining_amount:,.2f}",
-                        debt.due_date.strftime('%m/%d/%Y'),
-                        debt.get_status_display()
-                    ])
-                
-                debt_table = Table(debt_data, colWidths=[0.8*inch, 1*inch, 1*inch, 1*inch, 1*inch, 1*inch, 1.2*inch])
-                debt_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.darkorange),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 9),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.lightyellow),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                    ('FONTSIZE', (0, 1), (-1, -1), 8)
-                ]))
-                
-                elements.append(debt_table)
-                elements.append(Spacer(1, 20))
-                
-                # Materials Summary
-                materials_dict = {}
-                for debt in debts:
-                    if debt.sale and debt.sale.items.exists():
-                        for item in debt.sale.items.all():
-                            material_name = item.material.name
-                            if material_name not in materials_dict:
-                                materials_dict[material_name] = {
-                                    'sku': item.material.sku,
-                                    'quantity': 0,
-                                    'total_value': 0
-                                }
-                            materials_dict[material_name]['quantity'] += float(item.quantity)
-                            materials_dict[material_name]['total_value'] += float(item.quantity * item.price)
-                
-                if materials_dict:
-                    materials_title = Paragraph("Materials Summary", styles['Heading2'])
-                    elements.append(materials_title)
-                    elements.append(Spacer(1, 12))
-                    
-                    materials_data = [['Material', 'SKU', 'Total Quantity', 'Total Value']]
-                    for material_name, data in materials_dict.items():
-                        materials_data.append([
-                            material_name[:30],
-                            data['sku'][:15],
-                            f"{data['quantity']:.2f}",
-                            f"${data['total_value']:,.2f}"
-                        ])
-                    
-                    materials_table = Table(materials_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
-                    materials_table.setStyle(TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('FONTSIZE', (0, 0), (-1, 0), 10),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.lightgreen),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ('FONTSIZE', (0, 1), (-1, -1), 9)
-                    ]))
-                    
-                    elements.append(materials_table)
-            else:
-                no_debts_para = Paragraph("No debts found for this customer.", styles['Normal'])
-                elements.append(no_debts_para)
+            # Convert materials dict to list
+            materials_summary = []
+            for material_name, data in materials_dict.items():
+                materials_summary.append({
+                    'name': material_name,
+                    'sku': data['sku'],
+                    'quantity': data['quantity'],
+                    'total_value': data['total_value']
+                })
             
-            # Footer
-            elements.append(Spacer(1, 30))
-            footer_text = f"Report generated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')} | NurBuild Management System"
-            footer = Paragraph(footer_text, styles['Normal'])
-            elements.append(footer)
+            # Prepare response data
+            export_data = {
+                'report_type': 'customer_debt_report',
+                'generated_date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'customer': customer_info,
+                'summary': debt_summary,
+                'debts': debt_records,
+                'materials': materials_summary
+            }
             
-            # Build PDF
-            doc.build(elements)
-            pdf = buffer.getvalue()
-            buffer.close()
-            response.write(pdf)
-            
-            return response
+            return Response(export_data, status=status.HTTP_200_OK)
             
         except Exception as e:
             return Response(

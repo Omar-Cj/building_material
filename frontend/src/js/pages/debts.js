@@ -27,7 +27,8 @@ class DebtManager {
         
         // Summary actions
         document.getElementById('materialsAnalysisBtn').addEventListener('click', () => this.showMaterialsAnalysis());
-        document.getElementById('exportReportBtn').addEventListener('click', () => this.exportReport());
+        document.getElementById('exportReportBtn').addEventListener('click', () => this.exportReport('pdf'));
+        document.getElementById('printReportBtn')?.addEventListener('click', () => this.exportReport('print'));
         document.getElementById('exportCustomerBtn').addEventListener('click', () => this.exportCustomerDebts());
         document.getElementById('refreshSummaryBtn').addEventListener('click', () => this.loadSummary());
         
@@ -292,9 +293,14 @@ class DebtManager {
                     <button class="btn btn-sm btn-info" onclick="debtManager.viewMaterials(${debt.id})" title="View Materials">
                         <i class="fas fa-boxes"></i>
                     </button>
-                    <button class="btn btn-sm btn-secondary" onclick="debtManager.exportIndividualDebt(${debt.id})" title="Export Debt Statement">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-secondary" onclick="debtManager.exportIndividualDebt(${debt.id}, 'pdf')" title="Export PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="debtManager.exportIndividualDebt(${debt.id}, 'print')" title="Print View">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </div>
                     <button class="btn btn-sm btn-primary" onclick="debtManager.editDebt(${debt.id})" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -903,42 +909,51 @@ class DebtManager {
         }
     }
 
-    async exportReport() {
+    async exportReport(format = 'pdf') {
         // Show loading state
         const exportBtn = document.getElementById('exportReportBtn');
+        if (!exportBtn) {
+            this.showError('Export button not found.');
+            return;
+        }
+        
         const originalText = exportBtn.innerHTML;
         exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
         exportBtn.disabled = true;
         
         try {
-            console.log('Starting report export...');
+            console.log('Starting report export with format:', format);
             
-            // Check authentication before attempting export
-            const authToken = localStorage.getItem('token');
-            if (!authToken) {
-                this.showError('Please login to export reports.');
+            if (format === 'print') {
+                await this.showPrintableReport();
                 return;
             }
             
-            // Make direct fetch request with proper authentication for blob download
-            const response = await fetch('http://127.0.0.1:8000/api/debts/debts/export_report/', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `JWT ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
+            // Make API request for blob download
+            const response = await apiClient.get('/debts/debts/export_report/', {
+                responseType: 'blob',
+                timeout: 60000 // 60 second timeout
             });
             
             console.log('Export response received:', response);
             
-            // Check if response is ok
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Export failed: ${response.status} ${response.statusText}`);
+            // Validate blob response
+            if (!response || !response.data) {
+                throw new Error('No data received from server');
             }
             
-            // Get the blob data
-            const blob = await response.blob();
+            const blob = response.data;
+            
+            // Validate blob size
+            if (blob.size === 0) {
+                throw new Error('Empty file received from server');
+            }
+            
+            // Validate content type
+            if (!blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
+                console.warn('Unexpected content type:', blob.type);
+            }
+            
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -951,7 +966,11 @@ class DebtManager {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            
+            // Clean up URL object
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+            }, 1000);
             
             this.showSuccess('Debt report exported successfully! Check your downloads folder.');
             console.log('Report exported successfully');
@@ -969,34 +988,48 @@ class DebtManager {
                     errorMessage = 'You do not have permission to export reports.';
                 } else if (error.response.status === 500) {
                     errorMessage = 'Server error occurred while generating report.';
-                } else if (error.response.data && error.response.data.error) {
-                    errorMessage = error.response.data.error;
+                } else if (error.response.status === 404) {
+                    errorMessage = 'Export endpoint not found. Please contact support.';
+                } else if (error.response.data) {
+                    // Try to read error from blob if it's JSON
+                    try {
+                        const text = await error.response.data.text();
+                        const errorData = JSON.parse(text);
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                    } catch (e) {
+                        // If not JSON, use default message
+                        errorMessage = 'Server returned an error response.';
+                    }
                 }
             } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-                errorMessage = 'Export timeout. The report is too large. Please try again or contact support.';
+                errorMessage = 'Export timeout. The report is too large. Please try the printable view instead or contact support.';
             } else if (error.message) {
                 errorMessage = error.message;
             }
             
             this.showError(errorMessage);
             
+            // Offer printable alternative on failure
+            setTimeout(() => {
+                if (confirm('PDF export failed. Would you like to view a printable version instead?')) {
+                    this.showPrintableReport();
+                }
+            }, 2000);
+            
         } finally {
             // Restore button state
-            exportBtn.innerHTML = originalText;
-            exportBtn.disabled = false;
+            if (exportBtn) {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }
         }
     }
 
-    async exportIndividualDebt(debtId) {
+    async exportIndividualDebt(debtId, format = 'pdf') {
         try {
-            console.log('Exporting individual debt:', debtId);
-            
-            // Check authentication
-            const authToken = localStorage.getItem('token');
-            if (!authToken) {
-                this.showError('Please login to export debt statements.');
-                return;
-            }
+            console.log('Exporting individual debt:', debtId, 'Format:', format);
             
             // Find the debt for reference
             const debt = this.debts.find(d => d.id === debtId);
@@ -1005,41 +1038,51 @@ class DebtManager {
                 return;
             }
             
+            if (format === 'print') {
+                await this.showPrintableDebtStatement(debtId);
+                return;
+            }
+            
             this.showSuccess('Generating debt statement, please wait...');
             
-            // Make direct fetch request with proper authentication for blob download
-            const response = await fetch(`http://127.0.0.1:8000/api/debts/debts/${debtId}/export_individual/`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `JWT ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
+            // Make API request for blob download
+            const response = await apiClient.get(`/debts/debts/${debtId}/export_individual/`, {
+                responseType: 'blob',
+                timeout: 30000 // 30 second timeout
             });
             
             console.log('Individual debt export response received:', response);
             
-            // Check if response is ok
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Export failed: ${response.status} ${response.statusText}`);
+            // Validate response
+            if (!response || !response.data) {
+                throw new Error('No data received from server');
             }
             
-            // Get the blob data
-            const blob = await response.blob();
+            const blob = response.data;
+            
+            // Validate blob
+            if (blob.size === 0) {
+                throw new Error('Empty file received from server');
+            }
+            
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             
-            // Generate filename
-            const customerName = debt.customer_name.replace(/[^a-zA-Z0-9]/g, '_');
+            // Generate safe filename
+            const safeCustomerName = this.sanitizeFilename(debt.customer_name);
             const timestamp = new Date().toISOString().slice(0, 10);
-            link.download = `debt_${debtId}_${customerName}_${timestamp}.pdf`;
+            link.download = `debt_${debtId}_${safeCustomerName}_${timestamp}.pdf`;
             
             // Download the file
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            
+            // Clean up URL object
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+            }, 1000);
             
             this.showSuccess(`Debt statement for ${debt.customer_name} exported successfully!`);
             
@@ -1052,14 +1095,33 @@ class DebtManager {
                     errorMessage = 'Authentication failed. Please login again.';
                 } else if (error.response.status === 404) {
                     errorMessage = 'Debt not found or has been deleted.';
-                } else if (error.response.data && error.response.data.error) {
-                    errorMessage = error.response.data.error;
+                } else if (error.response.status === 500) {
+                    errorMessage = 'Server error while generating statement.';
+                } else if (error.response.data) {
+                    try {
+                        const text = await error.response.data.text();
+                        const errorData = JSON.parse(text);
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                    } catch (e) {
+                        errorMessage = 'Server returned an error response.';
+                    }
                 }
+            } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                errorMessage = 'Export timeout. Please try the printable view instead.';
             } else if (error.message) {
                 errorMessage = error.message;
             }
             
             this.showError(errorMessage);
+            
+            // Offer printable alternative
+            setTimeout(() => {
+                if (confirm('PDF export failed. Would you like to view a printable version instead?')) {
+                    this.showPrintableDebtStatement(debtId);
+                }
+            }, 2000);
         }
     }
 
@@ -1140,9 +1202,14 @@ class DebtManager {
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="debtManager.closeCustomerExportModal()">Cancel</button>
-                        <button class="btn btn-primary" id="exportCustomerReportBtn" onclick="debtManager.processCustomerExport()" disabled>
-                            <i class="fas fa-file-pdf"></i> Export Customer Report
-                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="exportCustomerReportBtn" onclick="debtManager.processCustomerExport('pdf')" disabled>
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+                            <button class="btn btn-outline-primary" id="printCustomerReportBtn" onclick="debtManager.processCustomerExport('print')" disabled>
+                                <i class="fas fa-print"></i> Print View
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1238,96 +1305,106 @@ class DebtManager {
                 customerDebtInfo.style.display = 'block';
             }
             
-            // Enable export button if customer is found (even if no debts)
+            // Enable export buttons if customer is found (even if no debts)
             if (exportBtn) {
                 exportBtn.disabled = false;
                 console.log('Export button enabled for customer:', customer.name);
+            }
+            const printBtn = document.getElementById('printCustomerReportBtn');
+            if (printBtn) {
+                printBtn.disabled = false;
             }
         } else {
             console.log('Customer not found in customers array');
             if (exportBtn) {
                 exportBtn.disabled = true;
             }
+            const printBtn = document.getElementById('printCustomerReportBtn');
+            if (printBtn) {
+                printBtn.disabled = true;
+            }
         }
     }
 
-    async processCustomerExport() {
-        // Get button reference first
+    async processCustomerExport(format = 'pdf') {
         const exportBtn = document.getElementById('exportCustomerReportBtn');
         let originalText = '';
         
+        // Validate inputs first
+        const customerId = document.getElementById('exportCustomerSelect')?.value;
+        if (!customerId) {
+            this.showError('Please select a customer first.');
+            return;
+        }
+        
+        const customer = this.customers.find(c => c.id === parseInt(customerId));
+        if (!customer) {
+            this.showError('Selected customer not found.');
+            return;
+        }
+        
+        if (!exportBtn) {
+            console.error('Export button not found in modal during export process');
+            this.showError('Export button not found. Please close and reopen the modal.');
+            return;
+        }
+        
+        // Show loading state
+        originalText = exportBtn.innerHTML;
+        exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+        exportBtn.disabled = true;
+        
         try {
-            const customerId = document.getElementById('exportCustomerSelect').value;
-            if (!customerId) {
-                this.showError('Please select a customer first.');
+            console.log('Starting customer export for:', customer.name, 'Format:', format);
+            
+            if (format === 'print') {
+                await this.showPrintableCustomerReport(customerId);
                 return;
             }
             
-            const customer = this.customers.find(c => c.id === parseInt(customerId));
-            if (!customer) {
-                this.showError('Selected customer not found.');
-                return;
+            this.showSuccess('Generating customer debt report, please wait...');
+                
+            // Make API request for blob download
+            const response = await apiClient.get(`/debts/debts/export_customer/?customer_id=${customerId}`, {
+                responseType: 'blob',
+                timeout: 45000 // 45 second timeout
+            });
+            
+            console.log('Customer export response received:', response);
+            
+            // Validate response
+            if (!response || !response.data) {
+                throw new Error('No data received from server');
             }
             
-            // Show loading state
-            if (!exportBtn) {
-                console.error('Export button not found in modal during export process');
-                this.showError('Export button not found. Please close and reopen the modal.');
-                return;
+            const blob = response.data;
+            
+            // Validate blob
+            if (blob.size === 0) {
+                throw new Error('Empty file received from server');
             }
             
-            originalText = exportBtn.innerHTML;
-            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-            exportBtn.disabled = true;
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
             
-            try {
-                this.showSuccess('Generating customer debt report, please wait...');
-                
-                // Make direct fetch request with proper authentication for blob download
-                const authToken = localStorage.getItem('token');
-                const response = await fetch(`http://127.0.0.1:8000/api/debts/debts/export_customer/?customer_id=${customerId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `JWT ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                console.log('Customer export response received:', response);
-                
-                // Check if response is ok
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Export failed: ${response.status} ${response.statusText}`);
-                }
-                
-                // Get the blob data
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                
-                // Generate filename
-                const customerName = customer.name.replace(/[^a-zA-Z0-9]/g, '_');
-                const timestamp = new Date().toISOString().slice(0, 10);
-                link.download = `customer_${customerId}_${customerName}_debt_report_${timestamp}.pdf`;
-                
-                // Download the file
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            // Generate safe filename
+            const safeCustomerName = this.sanitizeFilename(customer.name);
+            const timestamp = new Date().toISOString().slice(0, 10);
+            link.download = `customer_${customerId}_${safeCustomerName}_debt_report_${timestamp}.pdf`;
+            
+            // Download the file
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up URL object
+            setTimeout(() => {
                 window.URL.revokeObjectURL(url);
-                
-                this.showSuccess(`Customer debt report for ${customer.name} exported successfully!`);
-                this.closeCustomerExportModal();
-                
-            } finally {
-                // Restore button state
-                if (exportBtn && originalText) {
-                    exportBtn.innerHTML = originalText;
-                    exportBtn.disabled = false;
-                }
-            }
+            }, 1000);
+            
+            this.showSuccess(`Customer debt report for ${customer.name} exported successfully!`);
+            this.closeCustomerExportModal();
             
         } catch (error) {
             console.error('Error exporting customer debts:', error);
@@ -1337,15 +1414,41 @@ class DebtManager {
                 if (error.response.status === 401) {
                     errorMessage = 'Authentication failed. Please login again.';
                 } else if (error.response.status === 404) {
-                    errorMessage = 'Customer not found or has no debts.';
-                } else if (error.response.data && error.response.data.error) {
-                    errorMessage = error.response.data.error;
+                    errorMessage = 'Customer not found or export endpoint unavailable.';
+                } else if (error.response.status === 500) {
+                    errorMessage = 'Server error while generating report.';
+                } else if (error.response.data) {
+                    try {
+                        const text = await error.response.data.text();
+                        const errorData = JSON.parse(text);
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                    } catch (e) {
+                        errorMessage = 'Server returned an error response.';
+                    }
                 }
+            } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                errorMessage = 'Export timeout. Please try the printable view instead.';
             } else if (error.message) {
                 errorMessage = error.message;
             }
             
             this.showError(errorMessage);
+            
+            // Offer printable alternative
+            setTimeout(() => {
+                if (confirm('PDF export failed. Would you like to view a printable version instead?')) {
+                    this.showPrintableCustomerReport(customerId);
+                }
+            }, 2000);
+            
+        } finally {
+            // Restore button state
+            if (exportBtn && originalText) {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }
         }
     }
 
@@ -1476,6 +1579,440 @@ class DebtManager {
                 notification.remove();
             }
         }, 5000);
+    }
+
+    // Show printable debt report
+    async showPrintableReport() {
+        try {
+            console.log('Loading printable debt report...');
+            
+            // Get data for the report
+            const [summaryResponse, debtsResponse, materialsResponse] = await Promise.all([
+                apiClient.get('/debts/debts/summary/'),
+                apiClient.get('/debts/debts/'),
+                apiClient.get('/debts/debts/materials_analysis/')
+            ]);
+            
+            const summary = summaryResponse.data || summaryResponse;
+            const debts = debtsResponse.data?.results || debtsResponse.data || debtsResponse || [];
+            const materials = materialsResponse.data || materialsResponse;
+            
+            this.renderPrintableReport({
+                summary,
+                debts: debts.slice(0, 50), // Limit to 50 debts for performance
+                materials: materials.materials_analysis || [],
+                materialsSum: materials.summary || {}
+            });
+            
+        } catch (error) {
+            console.error('Error loading printable report data:', error);
+            this.showError('Failed to load report data. Please try again.');
+        }
+    }
+
+    // Show printable customer debt report
+    async showPrintableCustomerReport(customerId) {
+        try {
+            console.log('Loading printable customer report for:', customerId);
+            
+            const response = await apiClient.get(`/debts/debts/export_customer/?customer_id=${customerId}`);
+            const data = response.data || response;
+            
+            this.renderPrintableCustomerReport(data);
+            
+        } catch (error) {
+            console.error('Error loading customer report data:', error);
+            this.showError('Failed to load customer report data. Please try again.');
+        }
+    }
+
+    // Show printable individual debt statement
+    async showPrintableDebtStatement(debtId) {
+        try {
+            console.log('Loading printable debt statement for:', debtId);
+            
+            const debt = this.debts.find(d => d.id == debtId);
+            if (!debt) {
+                this.showError('Debt not found.');
+                return;
+            }
+            
+            // Get materials and payment data
+            const [materialsResponse] = await Promise.all([
+                apiClient.get(`/debts/debts/${debtId}/materials/`).catch(() => null)
+            ]);
+            
+            const materialsData = materialsResponse?.data || materialsResponse || { materials: [] };
+            
+            this.renderPrintableDebtStatement(debt, materialsData);
+            
+        } catch (error) {
+            console.error('Error loading debt statement data:', error);
+            this.showError('Failed to load debt statement data. Please try again.');
+        }
+    }
+
+    // Render printable comprehensive debt report
+    renderPrintableReport(data) {
+        const reportHTML = `
+            <div class="print-report show" id="printableReport">
+                <div class="print-content">
+                    <div class="company-header">
+                        <h1 class="company-name">NurBuild Management System</h1>
+                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h2 class="report-title">Comprehensive Debt Report</h2>
+                        <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
+                            year: 'numeric', month: 'long', day: 'numeric' 
+                        })}</p>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3 class="section-header">Executive Summary</h3>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <h4>Total Debts</h4>
+                                <div class="amount">${data.summary.total_debts || 0}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Total Amount</h4>
+                                <div class="amount">${this.formatCurrency(data.summary.total_amount || 0)}</div>
+                            </div>
+                            <div class="summary-card paid">
+                                <h4>Paid Amount</h4>
+                                <div class="amount">${this.formatCurrency(data.summary.paid_amount || 0)}</div>
+                            </div>
+                            <div class="summary-card outstanding">
+                                <h4>Outstanding</h4>
+                                <div class="amount">${this.formatCurrency(data.summary.remaining_amount || 0)}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Overdue Count</h4>
+                                <div class="amount">${data.summary.overdue_count || 0}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Collection Rate</h4>
+                                <div class="amount">${(data.summary.collection_rate || 0).toFixed(1)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${data.materials.length > 0 ? `
+                    <div class="materials-section">
+                        <h3 class="section-header">Top Materials in Debt</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>SKU</th>
+                                    <th>Outstanding Value</th>
+                                    <th>Customers</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.materials.slice(0, 10).map(material => `
+                                    <tr>
+                                        <td><strong>${material.material_name || 'N/A'}</strong></td>
+                                        <td>${material.material_sku || 'N/A'}</td>
+                                        <td class="amount-negative">${this.formatCurrency(material.outstanding_value || 0)}</td>
+                                        <td>${material.customers_count || 0}</td>
+                                        <td>${(material.total_quantity || 0).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="debts-section">
+                        <h3 class="section-header">Debt Records (Top 50)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
+                                    <th>Outstanding</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.debts.map(debt => `
+                                    <tr>
+                                        <td>#${debt.id}</td>
+                                        <td><strong>${debt.customer_name}</strong><br><small>${debt.customer_phone}</small></td>
+                                        <td>${this.formatCurrency(debt.total_amount)}</td>
+                                        <td class="amount-positive">${this.formatCurrency(debt.paid_amount)}</td>
+                                        <td class="${debt.remaining_amount > 0 ? 'amount-negative' : 'amount-positive'}">
+                                            ${this.formatCurrency(debt.remaining_amount)}
+                                        </td>
+                                        <td>${this.formatDate(debt.due_date)}</td>
+                                        <td><span class="status-badge ${debt.status}">${this.formatStatus(debt.status)}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="report-footer">
+                        <p>Report generated on ${new Date().toLocaleString()}</p>
+                        <p>NurBuild Management System - Building Materials & Construction Supplies</p>
+                    </div>
+                    
+                    <div class="print-controls">
+                        <button class="btn-print" onclick="window.print()">🖨️ Print Report</button>
+                        <button class="btn-close" onclick="debtManager.closePrintableReport()">❌ Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing report if any
+        this.closePrintableReport();
+        
+        // Add to page
+        document.body.insertAdjacentHTML('beforeend', reportHTML);
+    }
+    
+    // Render printable customer debt report
+    renderPrintableCustomerReport(data) {
+        const reportHTML = `
+            <div class="print-report show" id="printableReport">
+                <div class="print-content">
+                    <div class="company-header">
+                        <h1 class="company-name">NurBuild Management System</h1>
+                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h2 class="report-title">Customer Debt Report</h2>
+                        <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
+                            year: 'numeric', month: 'long', day: 'numeric' 
+                        })}</p>
+                    </div>
+                    
+                    <div class="customer-info">
+                        <h3>Customer Information</h3>
+                        <div class="customer-details">
+                            <div class="customer-detail"><strong>Name:</strong> ${data.customer?.name || 'N/A'}</div>
+                            <div class="customer-detail"><strong>Phone:</strong> ${data.customer?.phone || 'N/A'}</div>
+                            <div class="customer-detail"><strong>Email:</strong> ${data.customer?.email || 'N/A'}</div>
+                            <div class="customer-detail"><strong>Type:</strong> ${data.customer?.customer_type || 'N/A'}</div>
+                            <div class="customer-detail"><strong>Credit Limit:</strong> ${this.formatCurrency(data.customer?.credit_limit || 0)}</div>
+                            <div class="customer-detail"><strong>Outstanding Balance:</strong> 
+                                <span class="${data.customer?.outstanding_balance > 0 ? 'amount-negative' : 'amount-positive'}">
+                                    ${this.formatCurrency(data.customer?.outstanding_balance || 0)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3 class="section-header">Debt Summary</h3>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <h4>Total Debts</h4>
+                                <div class="amount">${data.summary?.total_debts || 0}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Total Amount</h4>
+                                <div class="amount">${this.formatCurrency(data.summary?.total_amount || 0)}</div>
+                            </div>
+                            <div class="summary-card paid">
+                                <h4>Total Paid</h4>
+                                <div class="amount">${this.formatCurrency(data.summary?.total_paid || 0)}</div>
+                            </div>
+                            <div class="summary-card outstanding">
+                                <h4>Outstanding</h4>
+                                <div class="amount">${this.formatCurrency(data.summary?.total_outstanding || 0)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${data.debts && data.debts.length > 0 ? `
+                    <div class="debts-section">
+                        <h3 class="section-header">Debt Records</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Due Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Paid Amount</th>
+                                    <th>Outstanding</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.debts.map(debt => `
+                                    <tr>
+                                        <td>#${debt.id}</td>
+                                        <td>${this.formatDate(debt.created_date)}</td>
+                                        <td>${this.formatDate(debt.due_date)}</td>
+                                        <td>${this.formatCurrency(debt.total_amount)}</td>
+                                        <td class="amount-positive">${this.formatCurrency(debt.paid_amount)}</td>
+                                        <td class="${debt.remaining_amount > 0 ? 'amount-negative' : 'amount-positive'}">
+                                            ${this.formatCurrency(debt.remaining_amount)}
+                                        </td>
+                                        <td><span class="status-badge ${debt.status}">${debt.status}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p>No debts found for this customer.</p>'}
+                    
+                    ${data.materials && data.materials.length > 0 ? `
+                    <div class="materials-section">
+                        <h3 class="section-header">Materials Summary</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>SKU</th>
+                                    <th>Quantity</th>
+                                    <th>Total Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.materials.map(material => `
+                                    <tr>
+                                        <td><strong>${material.name}</strong></td>
+                                        <td>${material.sku}</td>
+                                        <td>${material.quantity}</td>
+                                        <td>${this.formatCurrency(material.total_value)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="report-footer">
+                        <p>Report generated on ${new Date().toLocaleString()}</p>
+                        <p>NurBuild Management System - Customer: ${data.customer?.name || 'Unknown'}</p>
+                    </div>
+                    
+                    <div class="print-controls">
+                        <button class="btn-print" onclick="window.print()">🖨️ Print Report</button>
+                        <button class="btn-close" onclick="debtManager.closePrintableReport()">❌ Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing report if any
+        this.closePrintableReport();
+        
+        // Add to page
+        document.body.insertAdjacentHTML('beforeend', reportHTML);
+    }
+    
+    // Render printable individual debt statement
+    renderPrintableDebtStatement(debt, materialsData) {
+        const reportHTML = `
+            <div class="print-report show" id="printableReport">
+                <div class="print-content">
+                    <div class="company-header">
+                        <h1 class="company-name">NurBuild Management System</h1>
+                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h2 class="report-title">Debt Statement #${debt.id}</h2>
+                        <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
+                            year: 'numeric', month: 'long', day: 'numeric' 
+                        })}</p>
+                    </div>
+                    
+                    <div class="customer-info">
+                        <h3>Customer Information</h3>
+                        <div class="customer-details">
+                            <div class="customer-detail"><strong>Name:</strong> ${debt.customer_name}</div>
+                            <div class="customer-detail"><strong>Phone:</strong> ${debt.customer_phone}</div>
+                            <div class="customer-detail"><strong>Debt ID:</strong> #${debt.id}</div>
+                            <div class="customer-detail"><strong>Created:</strong> ${this.formatDate(debt.created_at)}</div>
+                            <div class="customer-detail"><strong>Due Date:</strong> ${this.formatDate(debt.due_date)}</div>
+                            <div class="customer-detail"><strong>Status:</strong> 
+                                <span class="status-badge ${debt.status}">${this.formatStatus(debt.status)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3 class="section-header">Debt Summary</h3>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <h4>Total Amount</h4>
+                                <div class="amount">${this.formatCurrency(debt.total_amount)}</div>
+                            </div>
+                            <div class="summary-card paid">
+                                <h4>Paid Amount</h4>
+                                <div class="amount">${this.formatCurrency(debt.paid_amount)}</div>
+                            </div>
+                            <div class="summary-card outstanding">
+                                <h4>Outstanding</h4>
+                                <div class="amount">${this.formatCurrency(debt.remaining_amount)}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Priority</h4>
+                                <div class="amount">${debt.priority}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${materialsData.materials && materialsData.materials.length > 0 ? `
+                    <div class="materials-section">
+                        <h3 class="section-header">Materials Breakdown</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>SKU</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${materialsData.materials.map(material => `
+                                    <tr>
+                                        <td><strong>${material.material_name || 'N/A'}</strong></td>
+                                        <td>${material.material_sku || 'N/A'}</td>
+                                        <td>${material.quantity || 0} ${material.unit || ''}</td>
+                                        <td>${this.formatCurrency(material.price_per_unit || 0)}</td>
+                                        <td>${this.formatCurrency(material.total_value || 0)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="report-footer">
+                        <p>Statement generated on ${new Date().toLocaleString()}</p>
+                        <p>NurBuild Management System - Debt #${debt.id}</p>
+                        <p><strong>Note:</strong> This statement reflects the debt status as of the generation date.</p>
+                    </div>
+                    
+                    <div class="print-controls">
+                        <button class="btn-print" onclick="window.print()">🖨️ Print Statement</button>
+                        <button class="btn-close" onclick="debtManager.closePrintableReport()">❌ Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing report if any
+        this.closePrintableReport();
+        
+        // Add to page
+        document.body.insertAdjacentHTML('beforeend', reportHTML);
+    }
+    
+    // Close printable report
+    closePrintableReport() {
+        const existingReport = document.getElementById('printableReport');
+        if (existingReport) {
+            existingReport.remove();
+        }
     }
 }
 

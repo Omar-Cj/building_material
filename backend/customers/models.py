@@ -60,6 +60,32 @@ class Customer(models.Model):
         default=0
     )
     payment_terms = models.CharField(max_length=255, blank=True, null=True)
+    allow_debt = models.BooleanField(default=False)
+    current_debt = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    debt_limit = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    
+    # Debt status choices
+    DEBT_ACTIVE = 'active'
+    DEBT_SUSPENDED = 'suspended' 
+    DEBT_CLEARED = 'cleared'
+    
+    DEBT_STATUS_CHOICES = [
+        (DEBT_ACTIVE, _('Active')),
+        (DEBT_SUSPENDED, _('Suspended')),
+        (DEBT_CLEARED, _('Cleared')),
+    ]
+    
+    debt_status = models.CharField(max_length=20, choices=DEBT_STATUS_CHOICES, default=DEBT_CLEARED)
     
     # Status and metadata
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ACTIVE)

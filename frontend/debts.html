@@ -14,6 +14,7 @@
     />
     <link rel="stylesheet" href="src/css/styles.css" />
     <link rel="stylesheet" href="src/css/debts.css" />
+    <link rel="stylesheet" href="src/css/print.css" />
   </head>
   <body>
     <nav class="sidebar" id="sidebar">
@@ -108,10 +109,16 @@
               <i class="fas fa-boxes"></i>
               Materials Analysis
             </button>
-            <button class="btn btn-warning" id="exportReportBtn">
-              <i class="fas fa-file-pdf"></i>
-              Export Report
-            </button>
+            <div class="btn-group">
+              <button class="btn btn-warning" id="exportReportBtn">
+                <i class="fas fa-file-pdf"></i>
+                Export PDF
+              </button>
+              <button class="btn btn-outline-warning" id="printReportBtn">
+                <i class="fas fa-print"></i>
+                Print View
+              </button>
+            </div>
             <button class="btn btn-secondary" id="exportCustomerBtn">
               <i class="fas fa-user-edit"></i>
               Customer Export
@@ -449,6 +456,7 @@
         <div class="confirm-icon">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
+        <h4 class="confirm-title" id="confirmTitle">Confirm Action</h4>
         <p class="confirm-message" id="confirmMessage">
           Are you sure you want to perform this action?
         </p>

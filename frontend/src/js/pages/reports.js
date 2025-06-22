@@ -251,13 +251,11 @@ class ReportsManager {
                 this.downloadJson(data, type);
             } else {
                 // For CSV and PDF, we need to handle file download
-                const response = await fetch(`http://127.0.0.1:8000/api${url}`, {
-                    headers: { 'Authorization': `JWT ${localStorage.getItem('token')}` }
+                const response = await apiClient.get(url, {
+                    responseType: 'blob'
                 });
                 
-                if (!response.ok) throw new Error('Export failed');
-                
-                const blob = await response.blob();
+                const blob = response.data;
                 this.downloadFile(blob, `${type}.${format}`);
             }
             
