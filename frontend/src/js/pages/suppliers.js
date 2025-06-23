@@ -146,6 +146,9 @@ class SuppliersManager {
                 params.append('is_active', this.filterActive);
             }
 
+            // Add timestamp to prevent caching
+            params.append('_t', Date.now());
+
             // Fixed endpoint - ensure correct API path
             const response = await apiClient.get(`/suppliers/suppliers/?${params.toString()}`);
             
@@ -161,6 +164,7 @@ class SuppliersManager {
                 this.totalSuppliers = 0;
             }
 
+            console.log(`Loaded ${this.suppliers.length} suppliers (total: ${this.totalSuppliers})`);
             this.renderTable();
             this.updatePagination();
 
@@ -199,7 +203,6 @@ class SuppliersManager {
                         </div>
                         <div>
                             <strong>${this.escapeHtml(supplier.name)}</strong>
-                            ${supplier.website ? `<br><small class="text-muted">${this.escapeHtml(supplier.website)}</small>` : ''}
                         </div>
                     </div>
                 </td>
@@ -311,8 +314,7 @@ class SuppliersManager {
 
         const fields = [
             'name', 'contact_person', 'email', 'phone', 'alternative_phone',
-            'address', 'city', 'state', 'postal_code', 'country', 'website',
-            'tax_id', 'payment_terms', 'credit_limit', 'notes'
+            'address', 'city', 'tax_id', 'payment_terms', 'credit_limit', 'notes'
         ];
 
         fields.forEach(field => {
@@ -337,6 +339,9 @@ class SuppliersManager {
         this.currentSupplier = null;
         this.isEditing = false;
         this.isSubmitting = false;
+
+        // Reset submit button state
+        this.showSubmitLoading(false);
 
         // Additional cleanup for modal backdrop issues
         setTimeout(() => {
@@ -366,17 +371,26 @@ class SuppliersManager {
         }
 
         this.isSubmitting = true;
+        this.showSubmitLoading(true);
 
         try {
             const formData = new FormData(form);
             const supplierData = this.buildSupplierData(formData, form);
+            
+            console.log('Submitting supplier data:', supplierData);
+            console.log('Is editing:', this.isEditing);
+            console.log('Current supplier:', this.currentSupplier);
 
             let response;
             if (this.isEditing && this.currentSupplier) {
+                console.log(`Updating supplier with ID: ${this.currentSupplier.id}`);
                 response = await apiClient.put(`/suppliers/suppliers/${this.currentSupplier.id}/`, supplierData);
+                console.log('Update response:', response);
                 this.showNotification('Supplier updated successfully', 'success');
             } else {
+                console.log('Creating new supplier');
                 response = await apiClient.post('/suppliers/suppliers/', supplierData);
+                console.log('Create response:', response);
                 this.showNotification('Supplier created successfully', 'success');
             }
 
@@ -393,13 +407,21 @@ class SuppliersManager {
                 }, 150);
             }
 
+            console.log('Reloading suppliers after form submission');
+            // Force refresh the suppliers data
+            this.currentPage = 1; // Reset to first page
+            
+            // Show a brief loading state to indicate refresh
+            this.showNotification('Refreshing suppliers list...', 'info');
             await this.loadSuppliers();
 
         } catch (error) {
             console.error('Failed to save supplier:', error);
+            console.error('Error details:', error.response?.data || error.message);
             this.showNotification(`Failed to ${this.isEditing ? 'update' : 'create'} supplier: ${error.message}`, 'error');
         } finally {
             this.isSubmitting = false;
+            this.showSubmitLoading(false);
         }
     }
 
@@ -458,16 +480,13 @@ class SuppliersManager {
                                         <dd class="col-sm-7">${supplier.email ? `<a href="mailto:${supplier.email}">${this.escapeHtml(supplier.email)}</a>` : '-'}</dd>
                                         <dt class="col-sm-5">Phone:</dt>
                                         <dd class="col-sm-7">${supplier.phone ? `<a href="tel:${supplier.phone}">${this.escapeHtml(supplier.phone)}</a>` : '-'}</dd>
-                                        <dt class="col-sm-5">Website:</dt>
-                                        <dd class="col-sm-7">${supplier.website ? `<a href="${supplier.website}" target="_blank">${this.escapeHtml(supplier.website)}</a>` : '-'}</dd>
                                     </dl>
                                 </div>
                                 <div class="col-md-6">
                                     <h6 class="fw-bold mb-3">Address & Business</h6>
                                     <address class="mb-3">
                                         ${this.escapeHtml(supplier.address || '')}<br>
-                                        ${this.escapeHtml(supplier.city || '')}, ${this.escapeHtml(supplier.state || '')}<br>
-                                        ${this.escapeHtml(supplier.postal_code || '')} ${this.escapeHtml(supplier.country || '')}
+                                        ${this.escapeHtml(supplier.city || '')}
                                     </address>
                                     <dl class="row">
                                         <dt class="col-sm-5">Payment Terms:</dt>
@@ -493,7 +512,7 @@ class SuppliersManager {
                             ` : ''}
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-warning" onclick="suppliersManager.editSupplier(${supplier.id}); bootstrap.Modal.getInstance(document.getElementById('supplierDetailsModal')).hide();">
+                            <button type="button" class="btn btn-warning" onclick="suppliersManager.editSupplierFromDetails(${supplier.id}); bootstrap.Modal.getInstance(document.getElementById('supplierDetailsModal')).hide();">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -535,6 +554,18 @@ class SuppliersManager {
         }
     }
 
+    async editSupplierFromDetails(id) {
+        try {
+            const supplier = await apiClient.get(`/suppliers/suppliers/${id}/`);
+            this.openModal(supplier);
+            // Ensure we refresh the list after editing from details modal
+            this.shouldRefreshAfterEdit = true;
+        } catch (error) {
+            console.error('Failed to load supplier for editing:', error);
+            this.showNotification('Failed to load supplier data', 'error');
+        }
+    }
+
     async deleteSupplier(id) {
         const supplier = this.suppliers.find(s => s.id === id);
         if (!supplier) return;
@@ -548,8 +579,17 @@ class SuppliersManager {
         if (!confirmed) return;
 
         try {
-            await apiClient.delete(`/suppliers/${id}/`);
+            await apiClient.delete(`/suppliers/suppliers/${id}/`);
             this.showNotification('Supplier deleted successfully', 'success');
+            
+            // Force refresh the suppliers data and stay on current page if possible
+            const totalPages = Math.ceil((this.totalSuppliers - 1) / this.pageSize);
+            if (this.currentPage > totalPages && totalPages > 0) {
+                this.currentPage = totalPages; // Go to last available page if current page becomes empty
+            }
+            
+            // Show a brief loading state to indicate refresh
+            this.showNotification('Refreshing suppliers list...', 'info');
             await this.loadSuppliers();
         } catch (error) {
             console.error('Failed to delete supplier:', error);
@@ -644,6 +684,24 @@ class SuppliersManager {
 
             modal.show();
         });
+    }
+
+    showSubmitLoading(show) {
+        const submitBtn = document.getElementById('supplierSubmitBtn');
+        if (!submitBtn) return;
+
+        const submitText = submitBtn.querySelector('.submit-text');
+        const submitLoading = submitBtn.querySelector('.submit-loading');
+
+        if (show) {
+            submitText.classList.add('d-none');
+            submitLoading.classList.remove('d-none');
+            submitBtn.disabled = true;
+        } else {
+            submitText.classList.remove('d-none');
+            submitLoading.classList.add('d-none');
+            submitBtn.disabled = false;
+        }
     }
 
     escapeHtml(text) {

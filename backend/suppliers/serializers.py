@@ -38,8 +38,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = ['id', 'name', 'contact_person', 'email', 'phone', 
-                  'alternative_phone', 'address', 'city', 'state', 
-                  'postal_code', 'country', 'website', 'tax_id', 
+                  'alternative_phone', 'address', 'city', 'tax_id', 
                   'payment_terms', 'credit_limit', 'is_active', 'notes', 
                   'created_at', 'updated_at', 'created_by', 'updated_by',
                   'contacts', 'material_info']
