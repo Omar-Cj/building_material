@@ -46,12 +46,12 @@ class MaterialSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Material
-        fields = ['id', 'name', 'sku', 'description', 'category', 'category_name',
-                  'brand', 'unit', 'unit_name', 'unit_abbreviation', 
+        fields = ['id', 'name', 'description', 'category', 'category_name',
+                  'unit', 'unit_name', 'unit_abbreviation', 
                   'quantity_in_stock', 'reorder_level', 'reorder_quantity',
                   'price_per_unit', 'cost_per_unit', 'main_supplier', 
                   'main_supplier_name', 'alternative_suppliers', 'is_active',
-                  'image', 'barcode', 'created_at', 'updated_at', 
+                  'image', 'created_at', 'updated_at', 
                   'created_by', 'updated_by', 'is_low_stock', 'stock_value',
                   'locations']
         read_only_fields = ['created_at', 'updated_at', 'created_by', 'updated_by']
@@ -80,13 +80,12 @@ class StockAdjustmentSerializer(serializers.ModelSerializer):
     """Serializer for StockAdjustment model."""
     
     material_name = serializers.CharField(source='material.name', read_only=True)
-    material_sku = serializers.CharField(source='material.sku', read_only=True)
     performer_name = serializers.CharField(source='performed_by.get_full_name', read_only=True)
     unit_abbreviation = serializers.CharField(source='material.unit.abbreviation', read_only=True)
     
     class Meta:
         model = StockAdjustment
-        fields = ['id', 'material', 'material_name', 'material_sku', 'adjustment_type',
+        fields = ['id', 'material', 'material_name', 'adjustment_type',
                   'quantity', 'previous_quantity', 'new_quantity', 'reason',
                   'reference', 'date', 'performed_by', 'performer_name',
                   'unit_abbreviation']

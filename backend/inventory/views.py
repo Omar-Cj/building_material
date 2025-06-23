@@ -74,9 +74,9 @@ class MaterialViewSet(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'brand', 'is_active', 'main_supplier']
-    search_fields = ['name', 'sku', 'description', 'barcode', 'brand']
-    ordering_fields = ['name', 'sku', 'quantity_in_stock', 'price_per_unit', 'cost_per_unit', 'created_at']
+    filterset_fields = ['category', 'is_active', 'main_supplier']
+    search_fields = ['name', 'description']
+    ordering_fields = ['name', 'quantity_in_stock', 'price_per_unit', 'cost_per_unit', 'created_at']
     
     def get_queryset(self):
         """Custom queryset to add annotations."""

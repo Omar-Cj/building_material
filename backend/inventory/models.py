@@ -51,10 +51,8 @@ class Material(models.Model):
     
     # Basic information
     name = models.CharField(max_length=255)
-    sku = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='materials')
-    brand = models.CharField(max_length=100, blank=True, null=True)
     unit = models.ForeignKey(UnitOfMeasure, on_delete=models.PROTECT, related_name='materials')
     
     # Inventory information
@@ -96,7 +94,6 @@ class Material(models.Model):
     # Metadata
     is_active = models.BooleanField(default=True)
     image = models.ImageField(upload_to='materials/', blank=True, null=True)
-    barcode = models.CharField(max_length=100, blank=True, null=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -118,7 +115,7 @@ class Material(models.Model):
         ordering = ['name']
     
     def __str__(self):
-        return f"{self.name} - {self.sku}"
+        return self.name
     
     @property
     def is_low_stock(self):

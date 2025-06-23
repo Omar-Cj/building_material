@@ -149,11 +149,10 @@ class InventoryManager {
                         </div>
                         <div class="ms-3">
                             <h6 class="mb-0">${m.name}</h6>
-                            ${m.brand ? `<small class="text-muted">${m.brand}</small>` : '<small class="text-muted">No brand specified</small>'}
+                            <small class="text-muted">${m.category_name}</small>
                         </div>
                     </div>
                 </td>
-                <td><span class="badge badge-secondary">${m.sku}</span></td>
                 <td>${m.category_name}</td>
                 <td><span class="stock-info ${m.is_low_stock ? 'low-stock' : ''}">${m.quantity_in_stock} ${m.unit_abbreviation}</span></td>
                 <td>$${parseFloat(m.price_per_unit).toFixed(2)}</td>
@@ -208,7 +207,7 @@ class InventoryManager {
         return pageItems.map(a => `
             <tr>
                 <td>${new Date(a.date).toLocaleDateString()}</td>
-                <td>${a.material_name} (${a.material_sku})</td>
+                <td>${a.material_name}</td>
                 <td><span class="badge badge-${this.getAdjustmentBadgeClass(a.adjustment_type)}">${a.adjustment_type.charAt(0).toUpperCase() + a.adjustment_type.slice(1)}</span></td>
                 <td><span class="${['outgoing', 'loss'].includes(a.adjustment_type) ? 'text-danger' : 'text-success'}">
                     ${['outgoing', 'loss'].includes(a.adjustment_type) ? '-' : '+'}${a.quantity} ${a.unit_abbreviation}</span></td>
@@ -351,7 +350,7 @@ class InventoryManager {
             'category-filter': { options: this.data.categories, default: 'All Categories', valueKey: 'id', textKey: 'name' },
             'category-parent': { options: this.data.categories, default: 'None (Root Category)', valueKey: 'id', textKey: 'name' },
             'material-unit': { options: this.data.units, default: 'Select Unit', valueKey: 'id', textKey: (u) => `${u.name} (${u.abbreviation})` },
-            'adjustment-material': { options: this.data.materials, default: 'Select Material', valueKey: 'id', textKey: (m) => `${m.name} (${m.sku})` }
+            'adjustment-material': { options: this.data.materials, default: 'Select Material', valueKey: 'id', textKey: (m) => m.name }
         };
 
         Object.entries(dropdowns).forEach(([id, config]) => {
@@ -373,7 +372,7 @@ class InventoryManager {
     getFormData(formId) {
         const formMappings = {
             'material-form': {
-                fields: ['name', 'sku', 'description', 'category', 'unit', 'brand', 'barcode', 'quantity_in_stock:material-stock', 'reorder_level:material-reorder-level', 'reorder_quantity:material-reorder-qty', 'cost_per_unit:material-cost', 'price_per_unit:material-price'],
+                fields: ['name', 'description', 'category', 'unit', 'quantity_in_stock:material-stock', 'reorder_level:material-reorder-level', 'reorder_quantity:material-reorder-qty', 'cost_per_unit:material-cost', 'price_per_unit:material-price'],
                 prefix: 'material-'
             },
             'category-form': {
@@ -409,7 +408,7 @@ class InventoryManager {
 
     populateForm(formId, data) {
         const mappings = {
-            'material-form': { name: 'material-name', sku: 'material-sku', description: 'material-description', category: 'material-category', unit: 'material-unit', brand: 'material-brand', barcode: 'material-barcode', quantity_in_stock: 'material-stock', reorder_level: 'material-reorder-level', reorder_quantity: 'material-reorder-qty', cost_per_unit: 'material-cost', price_per_unit: 'material-price' },
+            'material-form': { name: 'material-name', description: 'material-description', category: 'material-category', unit: 'material-unit', quantity_in_stock: 'material-stock', reorder_level: 'material-reorder-level', reorder_quantity: 'material-reorder-qty', cost_per_unit: 'material-cost', price_per_unit: 'material-price' },
             'category-form': { name: 'category-name', description: 'category-description', parent: 'category-parent' },
             'unit-form': { name: 'unit-name', abbreviation: 'unit-abbreviation', description: 'unit-description' }
         };

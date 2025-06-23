@@ -281,7 +281,7 @@ class Dashboard {
                             </div>
                             <div>
                                 <h6 class="mb-0">${item.material}</h6>
-                                <small class="text-muted">SKU: ${item.sku}</small>
+                                <small class="text-muted">${item.category}</small>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">

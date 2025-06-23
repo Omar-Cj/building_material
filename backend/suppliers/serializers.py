@@ -17,14 +17,13 @@ class SupplierMaterialSerializer(serializers.ModelSerializer):
     """Serializer for SupplierMaterial model."""
     
     material_name = serializers.CharField(source='material.name', read_only=True)
-    material_sku = serializers.CharField(source='material.sku', read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
     unit_abbreviation = serializers.CharField(source='material.unit.abbreviation', read_only=True)
     
     class Meta:
         model = SupplierMaterial
         fields = ['id', 'supplier', 'supplier_name', 'material', 'material_name', 
-                  'material_sku', 'supplier_material_code', 'unit_price', 
+                  'supplier_material_code', 'unit_price', 
                   'minimum_order_quantity', 'lead_time_days', 'is_preferred',
                   'last_purchase_date', 'last_purchase_price', 'notes', 
                   'unit_abbreviation']
