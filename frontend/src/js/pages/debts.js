@@ -3,15 +3,21 @@ import apiClient from '../apiClient.js';
 class DebtManager {
     constructor() {
         this.debts = [];
-        this.filteredDebts = [];
         this.currentPage = 1;
-        this.itemsPerPage = 6;
         this.totalPages = 1;
+        this.totalCount = 0;
+        this.pageSize = 6;
         this.currentDebt = null;
         this.isEditing = false;
         this.customers = [];
         this.unpaidDebts = [];
         this.summaryData = {};
+        this.currentSearch = '';
+        this.currentFilters = {
+            status: '',
+            priority: '',
+            dueDate: ''
+        };
         
         this.init();
     }
@@ -165,17 +171,25 @@ class DebtManager {
 
     async loadCustomers() {
         try {
-            console.log('Loading customers...');
-            const response = await apiClient.get('/customers/customers/');
+            console.log('Loading customers for dropdowns...');
+            // Load customers without pagination for dropdowns - get all customers
+            const response = await apiClient.get('/customers/customers/?page_size=1000');
             console.log('Customers response:', response);
+            
             // Handle both paginated and non-paginated responses
-            this.customers = response.data?.results || response.data || response || [];
-            console.log('Customers loaded:', this.customers.length);
+            if (response.results) {
+                this.customers = response.results;
+            } else {
+                this.customers = Array.isArray(response) ? response : [];
+            }
+            
+            console.log('Customers loaded for dropdowns:', this.customers.length);
             this.populateCustomerDropdowns();
         } catch (error) {
             console.error('Error loading customers:', error);
             this.customers = [];
-            this.showError(`Failed to load customers: ${error.message}`);
+            // Don't show error for customer loading failure - let debts still work
+            console.warn('Customers failed to load, but debts module will continue to function');
         }
     }
 
@@ -193,24 +207,81 @@ class DebtManager {
         }
     }
 
-    async loadDebts() {
+    async loadDebts(page = 1) {
         this.showLoading(true);
         try {
             console.log('Loading debts...');
-            const response = await apiClient.get('/debts/debts/');
+            
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: this.pageSize.toString()
+            });
+            
+            // Add search parameter
+            if (this.currentSearch.trim()) {
+                params.append('search', this.currentSearch.trim());
+            }
+            
+            // Add filter parameters
+            if (this.currentFilters.status) {
+                params.append('status', this.currentFilters.status);
+            }
+            if (this.currentFilters.priority) {
+                params.append('priority', this.currentFilters.priority);
+            }
+            if (this.currentFilters.dueDate) {
+                params.append('due_date', this.currentFilters.dueDate);
+            }
+            
+            console.log('Loading debts with params:', params.toString());
+            const response = await apiClient.get(`/debts/debts/?${params.toString()}`);
             console.log('Debts response:', response);
-            // Handle both paginated and non-paginated responses
-            this.debts = response.data?.results || response.data || response || [];
-            console.log('Debts loaded:', this.debts.length);
-            this.filteredDebts = [...this.debts];
+            
+            // Handle DRF pagination response
+            if (response.results) {
+                this.debts = response.results;
+                this.totalCount = response.count || 0;
+                this.currentPage = page;
+                this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+                console.log('Loaded debts:', this.debts.length, 'Total:', this.totalCount);
+            } else {
+                // Fallback for non-paginated response
+                this.debts = Array.isArray(response) ? response : [];
+                this.totalCount = this.debts.length;
+                this.currentPage = 1;
+                this.totalPages = 1;
+                console.log('Loaded debts (non-paginated):', this.debts.length);
+            }
+            
             this.updatePagination();
             this.renderDebts();
             this.loadUnpaidDebts();
         } catch (error) {
             console.error('Error loading debts:', error);
             this.debts = [];
-            this.filteredDebts = [];
-            this.showError(`Failed to load debts: ${error.message}`);
+            this.totalCount = 0;
+            this.currentPage = 1;
+            this.totalPages = 1;
+            this.updatePagination();
+            this.renderDebts();
+            // Provide more specific error messages
+            let errorMessage = `Failed to load debts: ${error.message}`;
+            if (error.response) {
+                if (error.response.status === 401) {
+                    errorMessage = 'Authentication failed. Please login again.';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else if (error.response.status === 403) {
+                    errorMessage = 'You do not have permission to view debts.';
+                } else if (error.response.status === 500) {
+                    errorMessage = 'Server error. Please contact support if this continues.';
+                }
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = 'Network connection failed. Please check your internet connection.';
+            }
+            this.showError(errorMessage);
         } finally {
             this.showLoading(false);
         }
@@ -247,19 +318,14 @@ class DebtManager {
         const tbody = document.getElementById('debtsTableBody');
         const noData = document.getElementById('noData');
         
-        if (this.filteredDebts.length === 0) {
+        if (this.debts.length === 0) {
             tbody.innerHTML = '';
             noData.style.display = 'block';
             return;
         }
         
         noData.style.display = 'none';
-        
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        const pageDebts = this.filteredDebts.slice(startIndex, endIndex);
-        
-        tbody.innerHTML = pageDebts.map(debt => this.createDebtRow(debt)).join('');
+        tbody.innerHTML = this.debts.map(debt => this.createDebtRow(debt)).join('');
     }
 
     createDebtRow(debt) {
@@ -346,20 +412,13 @@ class DebtManager {
     }
 
     handleSearch(query) {
-        if (!query.trim()) {
-            this.filteredDebts = [...this.debts];
-        } else {
-            const lowercaseQuery = query.toLowerCase();
-            this.filteredDebts = this.debts.filter(debt =>
-                debt.customer_name.toLowerCase().includes(lowercaseQuery) ||
-                debt.customer_phone.toLowerCase().includes(lowercaseQuery) ||
-                (debt.notes && debt.notes.toLowerCase().includes(lowercaseQuery)) ||
-                debt.id.toString().includes(lowercaseQuery)
-            );
-        }
+        this.currentSearch = query;
         this.currentPage = 1;
-        this.updatePagination();
-        this.renderDebts();
+        // Debounce search to avoid too many API calls
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            this.loadDebts(1);
+        }, 500);
     }
 
     handleFilter() {
@@ -367,47 +426,40 @@ class DebtManager {
         const priorityFilter = document.getElementById('priorityFilter').value;
         const dueDateFilter = document.getElementById('dueDateFilter').value;
         
-        this.filteredDebts = this.debts.filter(debt => {
-            let matches = true;
-            
-            if (statusFilter && debt.status !== statusFilter) {
-                matches = false;
-            }
-            
-            if (priorityFilter && debt.priority !== priorityFilter) {
-                matches = false;
-            }
-            
-            if (dueDateFilter) {
-                const debtDate = new Date(debt.due_date);
-                const filterDate = new Date(dueDateFilter);
-                if (debtDate.toDateString() !== filterDate.toDateString()) {
-                    matches = false;
-                }
-            }
-            
-            return matches;
-        });
-        
+        this.currentFilters.status = statusFilter;
+        this.currentFilters.priority = priorityFilter;
+        this.currentFilters.dueDate = dueDateFilter;
         this.currentPage = 1;
-        this.updatePagination();
-        this.renderDebts();
+        
+        this.loadDebts(1);
     }
 
     updatePagination() {
-        this.totalPages = Math.ceil(this.filteredDebts.length / this.itemsPerPage);
+        // Update pagination controls with server-side pagination data
+        const pagination = document.getElementById('pagination');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
         
-        document.getElementById('prevBtn').disabled = this.currentPage <= 1;
-        document.getElementById('nextBtn').disabled = this.currentPage >= this.totalPages;
-        document.getElementById('pageInfo').textContent = `Page ${this.currentPage} of ${this.totalPages}`;
+        if (this.totalPages > 1) {
+            if (pagination) pagination.style.display = 'flex';
+            if (pageInfo) pageInfo.textContent = `Page ${this.currentPage} of ${this.totalPages}`;
+            if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = this.currentPage >= this.totalPages;
+        } else if (this.totalCount > 0) {
+            if (pagination) pagination.style.display = 'flex';
+            if (pageInfo) pageInfo.textContent = `Page 1 of 1`;
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
+        } else {
+            if (pagination) pagination.style.display = 'none';
+        }
     }
 
     changePage(direction) {
         const newPage = this.currentPage + direction;
         if (newPage >= 1 && newPage <= this.totalPages) {
-            this.currentPage = newPage;
-            this.renderDebts();
-            this.updatePagination();
+            this.loadDebts(newPage);
         }
     }
 
@@ -474,7 +526,7 @@ class DebtManager {
             }
             
             this.closeDebtModal();
-            await this.loadDebts();
+            await this.loadDebts(this.currentPage);
             await this.loadSummary();
         } catch (error) {
             console.error('Error saving debt:', error);
@@ -585,7 +637,7 @@ class DebtManager {
             await apiClient.post('/debts/payments/', paymentData);
             this.showSuccess('Payment recorded successfully!');
             this.closePaymentModal();
-            await this.loadDebts();
+            await this.loadDebts(this.currentPage);
             await this.loadSummary();
         } catch (error) {
             console.error('Error recording payment:', error);
@@ -615,7 +667,7 @@ class DebtManager {
                         payment_method: 'cash'
                     });
                     this.showSuccess('Debt marked as paid!');
-                    await this.loadDebts();
+                    await this.loadDebts(this.currentPage);
                     await this.loadSummary();
                 } catch (error) {
                     console.error('Error marking debt as paid:', error);
@@ -771,7 +823,7 @@ class DebtManager {
                 try {
                     await apiClient.delete(`/debts/debts/${debtId}/`);
                     this.showSuccess('Debt deleted successfully!');
-                    await this.loadDebts();
+                    await this.loadDebts(this.currentPage);
                     await this.loadSummary();
                 } catch (error) {
                     console.error('Error deleting debt:', error);
@@ -1509,7 +1561,14 @@ class DebtManager {
         const table = document.querySelector('.table-container');
         
         if (loading) {
-            loading.style.display = show ? 'block' : 'none';
+            if (show) {
+                const message = this.currentPage > 1 ? 
+                    `Loading page ${this.currentPage}...` : 'Loading debts...';
+                loading.innerHTML = `<div class="loading-content"><i class="fas fa-spinner fa-spin"></i> ${message}</div>`;
+                loading.style.display = 'block';
+            } else {
+                loading.style.display = 'none';
+            }
         }
         
         if (table) {

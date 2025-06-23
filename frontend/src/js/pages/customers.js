@@ -3,12 +3,17 @@ import apiClient from '../apiClient.js';
 class CustomerManager {
     constructor() {
         this.customers = [];
-        this.filteredCustomers = [];
         this.currentPage = 1;
-        this.itemsPerPage = 6;
         this.totalPages = 1;
+        this.totalCount = 0;
+        this.pageSize = 6;
         this.currentCustomer = null;
         this.isEditing = false;
+        this.currentSearch = '';
+        this.currentFilters = {
+            status: '',
+            type: ''
+        };
         
         this.init();
     }
@@ -58,31 +63,85 @@ class CustomerManager {
         overlay.classList.toggle('active');
     }
 
-    async loadCustomers() {
+    async loadCustomers(page = 1) {
         try {
             this.showLoading();
-            const response = await apiClient.get('/customers/customers/');
-            this.customers = response.results || response;
-            this.filteredCustomers = [...this.customers];
-            this.updatePagination();
+            
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: this.pageSize.toString()
+            });
+            
+            // Add search parameter
+            if (this.currentSearch.trim()) {
+                params.append('search', this.currentSearch.trim());
+            }
+            
+            // Add filter parameters
+            if (this.currentFilters.status) {
+                params.append('status', this.currentFilters.status);
+            }
+            if (this.currentFilters.type) {
+                params.append('customer_type', this.currentFilters.type);
+            }
+            
+            console.log('Loading customers with params:', params.toString());
+            const response = await apiClient.get(`/customers/customers/?${params.toString()}`);
+            
+            // Handle DRF pagination response
+            if (response.results) {
+                this.customers = response.results;
+                this.totalCount = response.count || 0;
+                this.currentPage = page;
+                this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+                console.log('Loaded customers:', this.customers.length, 'Total:', this.totalCount);
+            } else {
+                // Fallback for non-paginated response
+                this.customers = Array.isArray(response) ? response : [];
+                this.totalCount = this.customers.length;
+                this.currentPage = 1;
+                this.totalPages = 1;
+                console.log('Loaded customers (non-paginated):', this.customers.length);
+            }
+            
+            this.updatePaginationControls();
             this.renderCustomers();
         } catch (error) {
             console.error('Error loading customers:', error);
-            this.showError('Failed to load customers. Please try again.');
+            this.customers = [];
+            this.totalCount = 0;
+            this.currentPage = 1;
+            this.totalPages = 1;
+            this.updatePaginationControls();
+            this.renderCustomers();
+            // Provide more specific error messages
+            let errorMessage = 'Failed to load customers. Please try again.';
+            if (error.response) {
+                if (error.response.status === 401) {
+                    errorMessage = 'Authentication failed. Please login again.';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else if (error.response.status === 403) {
+                    errorMessage = 'You do not have permission to view customers.';
+                } else if (error.response.status === 500) {
+                    errorMessage = 'Server error. Please contact support if this continues.';
+                }
+            } else if (error.message.includes('Network Error')) {
+                errorMessage = 'Network connection failed. Please check your internet connection.';
+            }
+            this.showError(errorMessage);
         }
     }
 
     renderCustomers() {
         const container = document.getElementById('customersTableContainer');
         
-        if (this.filteredCustomers.length === 0) {
+        if (this.customers.length === 0) {
             container.innerHTML = '<div class="no-data"><i class="fas fa-users"></i><br>No customers found</div>';
             return;
         }
-
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        const pageCustomers = this.filteredCustomers.slice(startIndex, endIndex);
 
         const table = `
             <table class="customers-table">
@@ -98,7 +157,7 @@ class CustomerManager {
                     </tr>
                 </thead>
                 <tbody>
-                    ${pageCustomers.map(customer => `
+                    ${this.customers.map(customer => `
                         <tr>
                             <td>
                                 <div>
@@ -134,31 +193,24 @@ class CustomerManager {
     }
 
     handleSearch(query) {
-        const searchTerm = query.toLowerCase().trim();
-        this.filteredCustomers = this.customers.filter(customer => 
-            customer.name.toLowerCase().includes(searchTerm) ||
-            (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
-            (customer.phone && customer.phone.includes(searchTerm)) ||
-            (customer.contact_person && customer.contact_person.toLowerCase().includes(searchTerm))
-        );
+        this.currentSearch = query;
         this.currentPage = 1;
-        this.updatePagination();
-        this.renderCustomers();
+        // Debounce search to avoid too many API calls
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            this.loadCustomers(1);
+        }, 500);
     }
 
     handleFilter() {
         const statusFilter = document.getElementById('statusFilter').value;
         const typeFilter = document.getElementById('typeFilter').value;
         
-        this.filteredCustomers = this.customers.filter(customer => {
-            const statusMatch = !statusFilter || customer.status === statusFilter;
-            const typeMatch = !typeFilter || customer.customer_type === typeFilter;
-            return statusMatch && typeMatch;
-        });
-        
+        this.currentFilters.status = statusFilter;
+        this.currentFilters.type = typeFilter;
         this.currentPage = 1;
-        this.updatePagination();
-        this.renderCustomers();
+        
+        this.loadCustomers(1);
     }
 
     openModal(customer = null) {
@@ -228,7 +280,7 @@ class CustomerManager {
             }
             
             this.closeModal();
-            await this.loadCustomers();
+            await this.loadCustomers(this.currentPage);
         } catch (error) {
             console.error('Error saving customer:', error);
             this.showError(this.isEditing ? 'Failed to update customer.' : 'Failed to add customer.');
@@ -296,7 +348,7 @@ class CustomerManager {
             await apiClient.delete(`/customers/customers/${this.currentCustomer.id}/`);
             this.showSuccess('Customer deleted successfully!');
             this.closeConfirmModal();
-            await this.loadCustomers();
+            await this.loadCustomers(this.currentPage);
         } catch (error) {
             console.error('Error deleting customer:', error);
             this.showError('Failed to delete customer.');
@@ -309,14 +361,13 @@ class CustomerManager {
     changePage(direction) {
         const newPage = this.currentPage + direction;
         if (newPage >= 1 && newPage <= this.totalPages) {
-            this.currentPage = newPage;
-            this.renderCustomers();
-            this.updatePaginationControls();
+            this.loadCustomers(newPage);
         }
     }
 
     updatePagination() {
-        this.totalPages = Math.ceil(this.filteredCustomers.length / this.itemsPerPage);
+        // This method is now handled in loadCustomers()
+        // Keeping for compatibility but functionality moved to updatePaginationControls
         this.updatePaginationControls();
     }
 
@@ -331,14 +382,21 @@ class CustomerManager {
             pageInfo.textContent = `Page ${this.currentPage} of ${this.totalPages}`;
             prevBtn.disabled = this.currentPage === 1;
             nextBtn.disabled = this.currentPage === this.totalPages;
+        } else if (this.totalCount > 0) {
+            pagination.style.display = 'flex';
+            pageInfo.textContent = `Page 1 of 1`;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
         } else {
             pagination.style.display = 'none';
         }
     }
 
     showLoading() {
-        document.getElementById('customersTableContainer').innerHTML = 
+        const message = this.currentPage > 1 ? 
+            `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading page ${this.currentPage}...</div>` :
             '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading customers...</div>';
+        document.getElementById('customersTableContainer').innerHTML = message;
     }
 
     showSuccess(message) {
