@@ -243,16 +243,15 @@ class DebtViewSet(viewsets.ModelViewSet):
                     elements.append(materials_title)
                     elements.append(Spacer(1, 12))
                     
-                    materials_table_data = [['Material', 'SKU', 'Outstanding Value', 'Customers']]
+                    materials_table_data = [['Material', 'Outstanding Value', 'Customers']]
                     for material in materials_data['materials_analysis'][:10]:  # Top 10 materials
                         materials_table_data.append([
                             material.get('material_name', 'N/A')[:25],
-                            material.get('material_sku', 'N/A')[:15],
                             f"${material.get('outstanding_value', 0):,.2f}",
                             str(material.get('customers_count', 0))
                         ])
                     
-                    materials_table = Table(materials_table_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1*inch])
+                    materials_table = Table(materials_table_data, colWidths=[3*inch, 2*inch, 1.5*inch])
                     materials_table.setStyle(TableStyle([
                         ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
                         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -618,13 +617,11 @@ class DebtViewSet(viewsets.ModelViewSet):
             for item in debt.sale.items.all():
                 material_id = item.material.id
                 material_name = item.material.name
-                material_sku = item.material.sku
                 
                 if material_id not in materials_analysis:
                     materials_analysis[material_id] = {
                         'material_id': material_id,
                         'material_name': material_name,
-                        'material_sku': material_sku,
                         'total_debts': 0,
                         'total_quantity': 0,
                         'total_value': 0,

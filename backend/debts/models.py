@@ -236,7 +236,6 @@ class Debt(models.Model):
             breakdown.append({
                 'material_id': item.material.id,
                 'material_name': item.material.name,
-                'material_sku': item.material.sku,
                 'category': item.material.category.name,
                 'quantity': float(item.quantity),
                 'unit': item.material.unit.abbreviation,
