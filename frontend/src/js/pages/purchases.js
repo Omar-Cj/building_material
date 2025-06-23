@@ -111,23 +111,35 @@ class PurchaseManager {
             
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>PO-${String(purchase.id).padStart(4, '0')}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="purchase-avatar">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="mb-0">PO-${String(purchase.id).padStart(4, '0')}</h6>
+                                <small class="text-muted">${supplier ? supplier.name : 'Unknown Supplier'}</small>
+                            </div>
+                        </div>
+                    </td>
                     <td>${supplier ? supplier.name : 'Unknown'}</td>
                     <td><span class="badge bg-info text-white">${itemCount} item${itemCount !== 1 ? 's' : ''}</span></td>
                     <td><strong>$${totalAmount.toFixed(2)}</strong></td>
                     <td><span class="badge ${this.getStatusClass(purchase.status)}">${purchase.status}</span></td>
                     <td>${new Date(purchase.created_at).toLocaleDateString()}</td>
                     <td>
-                        <button class="btn btn-sm btn-warning me-1" onclick="purchaseManager.editPurchase(${purchase.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger me-1" onclick="purchaseManager.deletePurchase(${purchase.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        ${purchase.status === 'pending' ? 
-                            `<button class="btn btn-sm btn-success" onclick="purchaseManager.receivePurchase(${purchase.id})">
-                                <i class="fas fa-check"></i>
-                            </button>` : ''}
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-warning" onclick="purchaseManager.editPurchase(${purchase.id})" title="Edit Purchase">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="purchaseManager.deletePurchase(${purchase.id})" title="Delete Purchase">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ${purchase.status === 'pending' ? 
+                                `<button class="btn btn-sm btn-success" onclick="purchaseManager.receivePurchase(${purchase.id})" title="Mark as Received">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''}
+                        </div>
                     </td>
                 </tr>
             `;

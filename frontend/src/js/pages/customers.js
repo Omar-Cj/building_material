@@ -161,9 +161,14 @@ class CustomerManager {
                     ${this.customers.map(customer => `
                         <tr>
                             <td>
-                                <div>
-                                    <strong>${this.escapeHtml(customer.name)}</strong>
-                                    ${customer.contact_person ? `<br><small>${this.escapeHtml(customer.contact_person)}</small>` : ''}
+                                <div class="d-flex align-items-center">
+                                    <div class="customer-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h6 class="mb-0">${this.escapeHtml(customer.name)}</h6>
+                                        ${customer.contact_person ? `<small class="text-muted">${this.escapeHtml(customer.contact_person)}</small>` : '<small class="text-muted">No contact person</small>'}
+                                    </div>
                                 </div>
                             </td>
                             <td><span class="status-badge">${this.formatCustomerType(customer.customer_type)}</span></td>

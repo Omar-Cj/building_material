@@ -142,8 +142,17 @@ class InventoryManager {
         
         return pageItems.map(m => `
             <tr>
-                <td><div class="material-info"><strong>${m.name}</strong>
-                    ${m.brand ? `<small class="text-muted">${m.brand}</small>` : ''}</div></td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="material-avatar">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0">${m.name}</h6>
+                            ${m.brand ? `<small class="text-muted">${m.brand}</small>` : '<small class="text-muted">No brand specified</small>'}
+                        </div>
+                    </div>
+                </td>
                 <td><span class="badge badge-secondary">${m.sku}</span></td>
                 <td>${m.category_name}</td>
                 <td><span class="stock-info ${m.is_low_stock ? 'low-stock' : ''}">${m.quantity_in_stock} ${m.unit_abbreviation}</span></td>
