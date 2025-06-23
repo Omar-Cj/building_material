@@ -1,4 +1,5 @@
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class DebtManager {
     constructor() {
@@ -1577,67 +1578,23 @@ class DebtManager {
     }
 
     showSuccess(message) {
-        this.showNotification(message, 'success');
+        notificationManager.showSuccess(message);
     }
 
     showError(message) {
-        this.showNotification(message, 'error');
+        notificationManager.showError(message);
+    }
+
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
+
+    showInfo(message) {
+        notificationManager.showInfo(message);
     }
 
     showNotification(message, type) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        // Add styles if not already present
-        if (!document.querySelector('#notification-styles')) {
-            const styles = document.createElement('style');
-            styles.id = 'notification-styles';
-            styles.innerHTML = `
-                .notification {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 10000;
-                    animation: slideInRight 0.3s ease;
-                }
-                .notification-success {
-                    background: linear-gradient(135deg, #27ae60, #229954);
-                }
-                .notification-error {
-                    background: linear-gradient(135deg, #e74c3c, #c0392b);
-                }
-                .notification-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(styles);
-        }
-        
-        document.body.appendChild(notification);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 5000);
+        notificationManager.showNotification(message, type);
     }
 
     // Show printable debt report

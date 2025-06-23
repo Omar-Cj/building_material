@@ -1,5 +1,6 @@
 // dashboard.js - Optimized Dashboard Logic
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class Dashboard {
     constructor() {
@@ -618,7 +619,19 @@ class Dashboard {
 
     showError(message) {
         console.error(message);
-        // Could implement toast notifications here
+        notificationManager.showError(message);
+    }
+
+    showSuccess(message) {
+        notificationManager.showSuccess(message);
+    }
+
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
+
+    showInfo(message) {
+        notificationManager.showInfo(message);
     }
 
     // Public method to refresh dashboard

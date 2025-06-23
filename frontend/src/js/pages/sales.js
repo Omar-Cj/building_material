@@ -1,5 +1,6 @@
 // sales.js
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class SalesManager {
     constructor() {
@@ -860,18 +861,30 @@ class SalesManager {
     }
 
     showAlert(message, type) {
-        const alertHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', alertHTML);
-        
-        setTimeout(() => {
-            const alert = document.querySelector('.alert');
-            if (alert) alert.remove();
-        }, 5000);
+        // Map Bootstrap alert types to notification types
+        const typeMap = {
+            'success': 'success',
+            'danger': 'error',
+            'warning': 'warning',
+            'info': 'info'
+        };
+        notificationManager.showNotification(message, typeMap[type] || 'info');
+    }
+
+    showSuccess(message) {
+        notificationManager.showSuccess(message);
+    }
+
+    showError(message) {
+        notificationManager.showError(message);
+    }
+
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
+
+    showInfo(message) {
+        notificationManager.showInfo(message);
     }
 }
 

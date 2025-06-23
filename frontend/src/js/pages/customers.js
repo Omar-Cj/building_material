@@ -1,4 +1,5 @@
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class CustomerManager {
     constructor() {
@@ -400,27 +401,23 @@ class CustomerManager {
     }
 
     showSuccess(message) {
-        this.showNotification(message, 'success');
+        notificationManager.showSuccess(message);
     }
 
     showError(message) {
-        this.showNotification(message, 'error');
+        notificationManager.showError(message);
+    }
+
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
+
+    showInfo(message) {
+        notificationManager.showInfo(message);
     }
 
     showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            ${message}
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        notificationManager.showNotification(message, type);
     }
 
     formatCustomerType(type) {
@@ -458,33 +455,7 @@ class CustomerManager {
 // Initialize customer manager
 const customerManager = new CustomerManager();
 
-// Add notification styles
-const style = document.createElement('style');
-style.textContent = `
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 3000;
-        animation: slideIn 0.3s ease;
-        transition: opacity 0.3s ease;
-    }
-    .notification.success {
-        background: linear-gradient(135deg, #27ae60, #229954);
-    }
-    .notification.error {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-    }
-    @keyframes slideIn {
-        from { transform: translateX(100%); }
-        to { transform: translateX(0); }
-    }
-`;
-document.head.appendChild(style);
+// Notifications are now handled by the shared notification utility
 
 // Make customerManager globally available
 window.customerManager = customerManager;

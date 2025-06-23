@@ -1,5 +1,6 @@
 // reports.js - Optimized Reports Module Implementation
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class ReportsManager {
     constructor() {
@@ -316,45 +317,31 @@ class ReportsManager {
     }
 
     showSuccess(message) {
-        this.showToast(message, 'success');
+        notificationManager.showSuccess(message);
     }
 
     showError(message) {
-        this.showToast(message, 'error');
+        notificationManager.showError(message);
         console.error('Reports Error:', message);
     }
 
-    showToast(message, type = 'info') {
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'success'} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
 
-        // Add to page
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            document.body.appendChild(container);
-        }
-        
-        container.appendChild(toast);
-        
-        // Show toast and auto-remove
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 5000);
+    showInfo(message) {
+        notificationManager.showInfo(message);
+    }
+
+    showToast(message, type = 'info') {
+        // Legacy method - map to new notification system
+        const typeMap = {
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning',
+            'info': 'info'
+        };
+        notificationManager.showNotification(message, typeMap[type] || 'info');
     }
 
     handleLogout() {

@@ -1,5 +1,6 @@
 // expenses.js - Refactored with proper user handling
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class ExpenseManager {
     constructor() {
@@ -455,35 +456,30 @@ class ExpenseManager {
     }
 
     showToast(message, type) {
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'success'} border-0`;
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${this.escapeHtml(message)}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        // Add to toast container
-        let container = document.getElementById('toastContainer');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toastContainer';
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            document.body.appendChild(container);
-        }
-        
-        container.appendChild(toast);
-        
-        // Show toast
-        setTimeout(() => toast.classList.add('show'), 100);
-        
-        // Auto hide after 3 seconds
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        // Map types to notification system
+        const typeMap = {
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning',
+            'info': 'info'
+        };
+        notificationManager.showNotification(message, typeMap[type] || 'info');
+    }
+
+    showSuccess(message) {
+        notificationManager.showSuccess(message);
+    }
+
+    showError(message) {
+        notificationManager.showError(message);
+    }
+
+    showWarning(message) {
+        notificationManager.showWarning(message);
+    }
+
+    showInfo(message) {
+        notificationManager.showInfo(message);
     }
 
     // Method to refresh users if needed

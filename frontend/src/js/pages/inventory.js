@@ -1,5 +1,6 @@
 // inventory.js - Optimized Inventory Management System
 import apiClient from '../apiClient.js';
+import notificationManager from '../utils/notifications.js';
 
 class InventoryManager {
     constructor() {
@@ -512,16 +513,31 @@ class InventoryManager {
         this.closeModal('confirm-modal');
     }
 
-    showSuccess(message) { this.showAlert(message, 'success'); }
-    showError(message) { this.showAlert(message, 'danger'); }
+    showSuccess(message) { 
+        notificationManager.showSuccess(message); 
+    }
+    
+    showError(message) { 
+        notificationManager.showError(message); 
+    }
+
+    showWarning(message) { 
+        notificationManager.showWarning(message); 
+    }
+
+    showInfo(message) { 
+        notificationManager.showInfo(message); 
+    }
 
     showAlert(message, type) {
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
-        alert.innerHTML = `${message}<button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>`;
-        document.body.appendChild(alert);
-        setTimeout(() => alert.remove(), 5000);
+        // Map Bootstrap alert types to notification types
+        const typeMap = {
+            'success': 'success',
+            'danger': 'error',
+            'warning': 'warning',
+            'info': 'info'
+        };
+        notificationManager.showNotification(message, typeMap[type] || 'info');
     }
 
     getAdjustmentBadgeClass(type) {
