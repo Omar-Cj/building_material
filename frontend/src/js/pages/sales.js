@@ -255,6 +255,7 @@ class SalesManager {
         pageItems.forEach(sale => {
             const row = document.createElement('tr');
             const customer = this.customers.find(c => c.id === sale.customer);
+            const customerName = sale.customer_name || (customer ? customer.name : 'Unknown');
             const itemCount = sale.items ? sale.items.length : 0;
 
             row.innerHTML = `
@@ -268,7 +269,7 @@ class SalesManager {
                         </div>
                     </div>
                 </td>
-                <td>${customer ? customer.name : 'Unknown'}</td>
+                <td>${customerName}</td>
                 <td>${new Date(sale.sale_date).toLocaleDateString()}</td>
                 <td>${itemCount} item${itemCount !== 1 ? 's' : ''}</td>
                 <td><strong>$${parseFloat(sale.total_amount).toFixed(2)}</strong></td>
@@ -692,6 +693,7 @@ class SalesManager {
         if (!sale) return;
 
         const customer = this.customers.find(c => c.id === sale.customer);
+        const customerName = sale.customer_name || (customer ? customer.name : 'Unknown');
         const modalHTML = `
             <div class="modal fade" id="viewSaleModal" tabindex="-1">
                 <div class="modal-dialog modal-lg">
@@ -702,7 +704,7 @@ class SalesManager {
                         </div>
                         <div class="modal-body">
                             <div class="row mb-3">
-                                <div class="col-md-6"><strong>Customer:</strong> ${customer ? customer.name : 'Unknown'}</div>
+                                <div class="col-md-6"><strong>Customer:</strong> ${customerName}</div>
                                 <div class="col-md-6"><strong>Date:</strong> ${new Date(sale.sale_date).toLocaleString()}</div>
                             </div>
                             <div class="row mb-3">
@@ -815,7 +817,7 @@ class SalesManager {
             const searchTerm = searchQuery.toLowerCase().trim();
             filtered = filtered.filter(sale => {
                 const customer = this.customers.find(c => c.id === sale.customer);
-                const customerName = (customer?.name || '').toLowerCase();
+                const customerName = (sale.customer_name || customer?.name || '').toLowerCase();
                 const saleId = sale.id.toString();
                 const paymentMethod = sale.payment_method.toLowerCase();
                 

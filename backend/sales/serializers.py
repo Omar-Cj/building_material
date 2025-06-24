@@ -11,15 +11,16 @@ class SaleItemSerializer(serializers.ModelSerializer):
 
 class SaleSerializer(serializers.ModelSerializer):
     items = SaleItemSerializer(many=True)
+    customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
         model = Sale
         fields = [
-            'id', 'customer', 'sale_date', 'tax', 'discount',
+            'id', 'customer', 'customer_name', 'sale_date', 'tax', 'discount',
             'total_amount', 'payment_method', 'payment_status', 'due_date',
             'created_by', 'updated_by', 'items'
         ]
-        read_only_fields = ['id', 'sale_date', 'total_amount', 'created_by', 'updated_by']
+        read_only_fields = ['id', 'sale_date', 'total_amount', 'created_by', 'updated_by', 'customer_name']
 
     def validate_items(self, value):
         if not value:

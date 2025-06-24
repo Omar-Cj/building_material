@@ -18,6 +18,7 @@ class SaleViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['customer', 'payment_method', 'sale_date']
     ordering_fields = ['sale_date', 'total_amount']
+    pagination_class = None  # Disable pagination for frontend client-side pagination
 
     def perform_create(self, serializer):
         sale = serializer.save()

@@ -77,6 +77,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'is_active', 'main_supplier']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'quantity_in_stock', 'price_per_unit', 'cost_per_unit', 'created_at']
+    pagination_class = None  # Disable pagination for frontend client-side pagination
     
     def get_queryset(self):
         """Custom queryset to add annotations."""
