@@ -78,7 +78,8 @@ INTERNAL_IPS = [
 # CORS Settings - Updated configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173",  # Add this for your specific case
+    "http://127.0.0.1:5173",
+    'nurbuild.netlify.app',    # Add this for your specific case
 ]
 
 # Alternative: Allow all origins during development (less secure)
