@@ -1,0 +1,15 @@
+# Netlify redirects for multi-page application
+
+# Direct page access
+/dashboard /dashboard.html 200
+/customers /customers.html 200
+/inventory /inventory.html 200
+/purchases /purchases.html 200
+/sales /sales.html 200
+/suppliers /suppliers.html 200
+/expenses /expenses.html 200
+/debts /debts.html 200
+/reports /reports.html 200
+
+# Fallback for any unmatched routes to login page
+/* /index.html 200
