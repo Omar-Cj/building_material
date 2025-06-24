@@ -74,47 +74,51 @@ class InventoryManager {
             const promises = [
                 this.loadData('categories', '/inventory/categories/'),
                 this.loadData('units', '/inventory/units/'),
-                this.loadData('materials', '/inventory/materials/', true),
-                this.loadData('adjustments', '/inventory/stock-adjustments/', true)
+                this.loadData('materials', '/inventory/materials/'),
+                this.loadData('adjustments', '/inventory/stock-adjustments/')
             ];
             await Promise.all(promises);
-            this.populateDropdowns();
+            await this.populateDropdowns();
         } catch (error) {
             this.showError('Failed to load initial data');
         }
     }
 
-    async loadData(type, endpoint, paginated = false) {
+    async loadData(type, endpoint) {
         try {
-            let url = endpoint;
-            if (paginated) {
-                const params = new URLSearchParams({
-                    page: this.data.pagination[type].page,
-                    limit: this.data.pagination[type].limit,
-                    search: this.data.filters.search,
-                    ...(type === 'materials' && { 
-                        category: this.data.filters.category,
-                        low_stock: this.data.filters.stock === 'low'
-                    }),
-                    ...(type === 'adjustments' && { 
-                        adjustment_type: this.data.filters.type 
-                    })
-                });
-                url += `?${params}`;
-            }
-
+            // Show loading state
+            this.setLoadingState(type, true);
+            
+            const params = new URLSearchParams({
+                page: this.data.pagination[type].page,
+                limit: this.data.pagination[type].limit,
+                search: this.data.filters.search,
+                ...(type === 'materials' && { 
+                    category: this.data.filters.category,
+                    low_stock: this.data.filters.stock === 'low'
+                }),
+                ...(type === 'adjustments' && { 
+                    adjustment_type: this.data.filters.type 
+                })
+            });
+            
+            const url = `${endpoint}?${params}`;
             const response = await apiClient.get(url);
-            this.data[type] = response.results || response;
-            if (paginated) {
-                this.data.pagination[type].total = response.count || this.data[type].length;
-            } else {
-                // For non-paginated data, set total for pagination
-                this.data.pagination[type].total = this.data[type].length;
-            }
+            
+            // All endpoints now return paginated responses
+            this.data[type] = response.results || [];
+            this.data.pagination[type].total = response.count || 0;
             
             if (type === this.data.currentTab) this.renderCurrentTab();
         } catch (error) {
-            this.showError(`Failed to load ${type}`);
+            console.error(`Error loading ${type}:`, error);
+            this.showError(`Failed to load ${type}. Please check your connection and try again.`);
+            // Clear data on error to prevent stale data display
+            this.data[type] = [];
+            this.data.pagination[type].total = 0;
+            if (type === this.data.currentTab) this.renderCurrentTab();
+        } finally {
+            this.setLoadingState(type, false);
         }
     }
 
@@ -135,12 +139,8 @@ class InventoryManager {
     }
 
     getMaterialRows() {
-        // Apply pagination to materials
-        const startIndex = (this.data.pagination.materials.page - 1) * this.data.pagination.materials.limit;
-        const endIndex = startIndex + this.data.pagination.materials.limit;
-        const pageItems = this.data.materials.slice(startIndex, endIndex);
-        
-        return pageItems.map(m => `
+        // Data is already paginated from backend
+        return this.data.materials.map(m => `
             <tr>
                 <td>
                     <div class="d-flex align-items-center">
@@ -164,12 +164,8 @@ class InventoryManager {
     }
 
     getCategoryRows() {
-        // Apply pagination to categories
-        const startIndex = (this.data.pagination.categories.page - 1) * this.data.pagination.categories.limit;
-        const endIndex = startIndex + this.data.pagination.categories.limit;
-        const pageItems = this.data.categories.slice(startIndex, endIndex);
-        
-        return pageItems.map(c => `
+        // Data is already paginated from backend
+        return this.data.categories.map(c => `
             <tr>
                 <td><strong>${c.name}</strong></td>
                 <td>${c.description || '-'}</td>
@@ -182,12 +178,8 @@ class InventoryManager {
     }
 
     getUnitRows() {
-        // Apply pagination to units
-        const startIndex = (this.data.pagination.units.page - 1) * this.data.pagination.units.limit;
-        const endIndex = startIndex + this.data.pagination.units.limit;
-        const pageItems = this.data.units.slice(startIndex, endIndex);
-        
-        return pageItems.map(u => `
+        // Data is already paginated from backend
+        return this.data.units.map(u => `
             <tr>
                 <td><strong>${u.name}</strong></td>
                 <td><span class="badge badge-info">${u.abbreviation}</span></td>
@@ -199,12 +191,8 @@ class InventoryManager {
     }
 
     getAdjustmentRows() {
-        // Apply pagination to adjustments
-        const startIndex = (this.data.pagination.adjustments.page - 1) * this.data.pagination.adjustments.limit;
-        const endIndex = startIndex + this.data.pagination.adjustments.limit;
-        const pageItems = this.data.adjustments.slice(startIndex, endIndex);
-        
-        return pageItems.map(a => `
+        // Data is already paginated from backend
+        return this.data.adjustments.map(a => `
             <tr>
                 <td>${new Date(a.date).toLocaleDateString()}</td>
                 <td>${a.material_name}</td>
@@ -249,13 +237,20 @@ class InventoryManager {
     }
 
     async refreshData(type) {
-        const endpoints = {
-            material: [() => this.loadData('materials', '/inventory/materials/', true)],
-            category: [() => this.loadData('categories', '/inventory/categories/'), () => this.populateDropdowns()],
-            unit: [() => this.loadData('units', '/inventory/units/'), () => this.populateDropdowns()],
-            adjustment: [() => this.loadData('adjustments', '/inventory/stock-adjustments/', true), () => this.loadData('materials', '/inventory/materials/', true)]
-        };
-        await Promise.all(endpoints[type].map(fn => fn()));
+        if (type === 'material') {
+            await this.loadData('materials', '/inventory/materials/');
+        } else if (type === 'category') {
+            await this.loadData('categories', '/inventory/categories/');
+            await this.populateDropdowns();
+        } else if (type === 'unit') {
+            await this.loadData('units', '/inventory/units/');
+            await this.populateDropdowns();
+        } else if (type === 'adjustment') {
+            await Promise.all([
+                this.loadData('adjustments', '/inventory/stock-adjustments/'),
+                this.loadData('materials', '/inventory/materials/')
+            ]);
+        }
     }
 
     // Fixed generic edit method with proper data structure mapping
@@ -323,16 +318,19 @@ class InventoryManager {
 
     async updateStats() {
         try {
-            const [stockValue, lowStockItems] = await Promise.all([
+            // Get actual counts from paginated endpoints to ensure synchronization
+            const [stockValue, lowStockItems, allMaterials, allCategories] = await Promise.all([
                 apiClient.get('/inventory/materials/stock_value/'),
-                apiClient.get('/inventory/materials/low_stock/')
+                apiClient.get('/inventory/materials/low_stock/'),
+                apiClient.get('/inventory/materials/?page=1&limit=1'), // Just need count
+                apiClient.get('/inventory/categories/?page=1&limit=1') // Just need count
             ]);
 
             const stats = {
-                'total-materials': this.data.materials.length,
+                'total-materials': allMaterials.count || 0,
                 'stock-value': `$${parseFloat(stockValue.total_stock_value || 0).toFixed(2)}`,
                 'low-stock-count': lowStockItems.length || lowStockItems.count || 0,
-                'categories-count': this.data.categories.length
+                'categories-count': allCategories.count || 0
             };
 
             Object.entries(stats).forEach(([id, value]) => {
@@ -344,29 +342,40 @@ class InventoryManager {
         }
     }
 
-    populateDropdowns() {
-        const dropdowns = {
-            'material-category': { options: this.data.categories, default: 'Select Category', valueKey: 'id', textKey: 'name' },
-            'category-filter': { options: this.data.categories, default: 'All Categories', valueKey: 'id', textKey: 'name' },
-            'category-parent': { options: this.data.categories, default: 'None (Root Category)', valueKey: 'id', textKey: 'name' },
-            'material-unit': { options: this.data.units, default: 'Select Unit', valueKey: 'id', textKey: (u) => `${u.name} (${u.abbreviation})` },
-            'adjustment-material': { options: this.data.materials, default: 'Select Material', valueKey: 'id', textKey: (m) => m.name }
-        };
+    async populateDropdowns() {
+        try {
+            // Load all categories and units for dropdowns (not paginated for this purpose)
+            const [allCategories, allUnits, allMaterials] = await Promise.all([
+                apiClient.get('/inventory/categories/?limit=1000'), // Get many items for dropdown
+                apiClient.get('/inventory/units/?limit=1000'),
+                apiClient.get('/inventory/materials/?limit=1000')
+            ]);
 
-        Object.entries(dropdowns).forEach(([id, config]) => {
-            const select = document.getElementById(id);
-            if (!select) return;
-            
-            const currentValue = select.value;
-            select.innerHTML = `<option value="">${config.default}</option>`;
-            
-            config.options.forEach(item => {
-                const text = typeof config.textKey === 'function' ? config.textKey(item) : item[config.textKey];
-                select.innerHTML += `<option value="${item[config.valueKey]}">${text}</option>`;
+            const dropdowns = {
+                'material-category': { options: allCategories.results || [], default: 'Select Category', valueKey: 'id', textKey: 'name' },
+                'category-filter': { options: allCategories.results || [], default: 'All Categories', valueKey: 'id', textKey: 'name' },
+                'category-parent': { options: allCategories.results || [], default: 'None (Root Category)', valueKey: 'id', textKey: 'name' },
+                'material-unit': { options: allUnits.results || [], default: 'Select Unit', valueKey: 'id', textKey: (u) => `${u.name} (${u.abbreviation})` },
+                'adjustment-material': { options: allMaterials.results || [], default: 'Select Material', valueKey: 'id', textKey: (m) => m.name }
+            };
+
+            Object.entries(dropdowns).forEach(([id, config]) => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                
+                const currentValue = select.value;
+                select.innerHTML = `<option value="">${config.default}</option>`;
+                
+                config.options.forEach(item => {
+                    const text = typeof config.textKey === 'function' ? config.textKey(item) : item[config.textKey];
+                    select.innerHTML += `<option value="${item[config.valueKey]}">${text}</option>`;
+                });
+                
+                select.value = currentValue;
             });
-            
-            select.value = currentValue;
-        });
+        } catch (error) {
+            console.error('Failed to populate dropdowns:', error);
+        }
     }
 
     getFormData(formId) {
@@ -457,11 +466,18 @@ class InventoryManager {
 
     handleSearch(type) {
         this.data.filters.search = document.getElementById(`${type}-search`).value;
-        if (['materials', 'adjustments'].includes(type)) {
-            this.loadData(type, type === 'materials' ? '/inventory/materials/' : '/inventory/stock-adjustments/', true);
-        } else {
-            this.renderCurrentTab();
-        }
+        // Reset to first page when searching
+        this.data.pagination[type].page = 1;
+        
+        // All data types now use backend pagination
+        const endpoints = {
+            materials: '/inventory/materials/',
+            categories: '/inventory/categories/',
+            units: '/inventory/units/',
+            adjustments: '/inventory/stock-adjustments/'
+        };
+        
+        this.loadData(type, endpoints[type]);
     }
 
     applyFilters() {
@@ -472,13 +488,17 @@ class InventoryManager {
             date: document.getElementById('date-filter')?.value || ''
         });
 
-        if (this.data.currentTab === 'materials') this.loadData('materials', '/inventory/materials/', true);
-        else if (this.data.currentTab === 'adjustments') this.loadData('adjustments', '/inventory/stock-adjustments/', true);
+        // Reset to first page when applying filters
+        this.data.pagination[this.data.currentTab].page = 1;
+
+        if (this.data.currentTab === 'materials') this.loadData('materials', '/inventory/materials/');
+        else if (this.data.currentTab === 'adjustments') this.loadData('adjustments', '/inventory/stock-adjustments/');
     }
 
     filterLowStock() {
         this.data.filters.stock = 'low';
-        this.loadData('materials', '/inventory/materials/', true);
+        this.data.pagination.materials.page = 1;
+        this.loadData('materials', '/inventory/materials/');
     }
 
     openModal(modalId) {
@@ -552,6 +572,29 @@ class InventoryManager {
         return { incoming: 'success', outgoing: 'warning', loss: 'danger', return: 'info', correction: 'secondary' }[type] || 'secondary';
     }
 
+    setLoadingState(type, isLoading) {
+        const tableBody = document.getElementById(`${type}-table-body`);
+        if (tableBody) {
+            if (isLoading) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="100%" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                            Loading ${type}...
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Disable pagination buttons during loading
+        const pagination = document.getElementById(`${type}-pagination`);
+        if (pagination) {
+            const buttons = pagination.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = isLoading);
+        }
+    }
+
     updatePagination(type) {
         const pagination = this.data.pagination[type];
         const paginationContainer = document.getElementById(`${type}-pagination`);
@@ -588,13 +631,15 @@ class InventoryManager {
         if (newPage >= 1 && newPage <= totalPages) {
             pagination.page = newPage;
             
-            // For paginated data (materials and adjustments), reload from API
-            if (['materials', 'adjustments'].includes(type)) {
-                this.loadData(type, type === 'materials' ? '/inventory/materials/' : '/inventory/stock-adjustments/', true);
-            } else {
-                // For non-paginated data (categories and units), just re-render
-                this.renderCurrentTab();
-            }
+            // All data types now use backend pagination
+            const endpoints = {
+                materials: '/inventory/materials/',
+                categories: '/inventory/categories/',
+                units: '/inventory/units/',
+                adjustments: '/inventory/stock-adjustments/'
+            };
+            
+            this.loadData(type, endpoints[type]);
         }
     }
 

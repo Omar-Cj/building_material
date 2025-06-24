@@ -4,6 +4,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.utils.translation import gettext_lazy as _
@@ -23,12 +24,20 @@ from users.permissions import (
 )
 
 
+class InventoryPagination(PageNumberPagination):
+    """Custom pagination class for inventory data."""
+    page_size = 6
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     """API endpoints for material categories."""
     
-    queryset = Category.objects.all()
+    queryset = Category.objects.select_related('parent').all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrReadOnly]
+    pagination_class = InventoryPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_active', 'parent']
     search_fields = ['name', 'description']
@@ -61,6 +70,7 @@ class UnitOfMeasureViewSet(viewsets.ModelViewSet):
     queryset = UnitOfMeasure.objects.all()
     serializer_class = UnitOfMeasureSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrReadOnly]
+    pagination_class = InventoryPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_active']
     search_fields = ['name', 'abbreviation']
@@ -70,14 +80,14 @@ class UnitOfMeasureViewSet(viewsets.ModelViewSet):
 class MaterialViewSet(viewsets.ModelViewSet):
     """API endpoints for materials."""
     
-    queryset = Material.objects.all()
+    queryset = Material.objects.select_related('category', 'unit', 'main_supplier', 'created_by', 'updated_by').all()
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrReadOnly]
+    pagination_class = InventoryPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'is_active', 'main_supplier']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'quantity_in_stock', 'price_per_unit', 'cost_per_unit', 'created_at']
-    pagination_class = None  # Disable pagination for frontend client-side pagination
     
     def get_queryset(self):
         """Custom queryset to add annotations."""
@@ -121,9 +131,10 @@ class MaterialViewSet(viewsets.ModelViewSet):
 class StockAdjustmentViewSet(viewsets.ModelViewSet):
     """API endpoints for stock adjustments."""
     
-    queryset = StockAdjustment.objects.all()
+    queryset = StockAdjustment.objects.select_related('material', 'material__unit', 'performed_by').all()
     serializer_class = StockAdjustmentSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = InventoryPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['material', 'adjustment_type', 'date', 'performed_by']
     search_fields = ['reason', 'reference']
