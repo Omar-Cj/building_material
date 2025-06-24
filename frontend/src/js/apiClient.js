@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+const API_BASE_URL = "https://dd2e-154-115-237-128.ngrok-free.app/api";
 
 const getToken = () => {
   const token = localStorage.getItem("token");
