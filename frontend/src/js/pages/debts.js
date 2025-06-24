@@ -20,6 +20,13 @@ class DebtManager {
             dueDate: ''
         };
         
+        // Company/Brand configuration
+        this.companyConfig = {
+            name: 'NurBuild',
+            subtitle: 'Building Materials & Construction Supplies',
+            fullName: 'NurBuild Management System'
+        };
+        
         this.init();
     }
 
@@ -1744,8 +1751,8 @@ class DebtManager {
             <div class="print-report show" id="printableReport">
                 <div class="print-content">
                     <div class="company-header">
-                        <h1 class="company-name">NurBuild Management System</h1>
-                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h1 class="company-name">${this.companyConfig.fullName}</h1>
+                        <p class="company-subtitle">${this.companyConfig.subtitle}</p>
                         <h2 class="report-title">Comprehensive Debt Report</h2>
                         <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
                             year: 'numeric', month: 'long', day: 'numeric' 
@@ -1844,7 +1851,7 @@ class DebtManager {
                     
                     <div class="report-footer">
                         <p>Report generated on ${new Date().toLocaleString()}</p>
-                        <p>NurBuild Management System - Building Materials & Construction Supplies</p>
+                        <p>${this.companyConfig.fullName} - ${this.companyConfig.subtitle}</p>
                     </div>
                     
                     <div class="print-controls">
@@ -1864,12 +1871,16 @@ class DebtManager {
     
     // Render printable customer debt report
     renderPrintableCustomerReport(data) {
+        // Limit debts to fit single page (max 10 debts)
+        const limitedDebts = data.debts ? data.debts.slice(0, 10) : [];
+        const hasMoreDebts = data.debts && data.debts.length > 10;
+        
         const reportHTML = `
-            <div class="print-report show" id="printableReport">
+            <div class="print-report show single-page" id="printableReport">
                 <div class="print-content">
                     <div class="company-header">
-                        <h1 class="company-name">NurBuild Management System</h1>
-                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h1 class="company-name">${this.companyConfig.fullName}</h1>
+                        <p class="company-subtitle">${this.companyConfig.subtitle}</p>
                         <h2 class="report-title">Customer Debt Report</h2>
                         <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
                             year: 'numeric', month: 'long', day: 'numeric' 
@@ -1914,23 +1925,23 @@ class DebtManager {
                         </div>
                     </div>
                     
-                    ${data.debts && data.debts.length > 0 ? `
+                    ${limitedDebts.length > 0 ? `
                     <div class="debts-section">
-                        <h3 class="section-header">Debt Records</h3>
+                        <h3 class="section-header">Debt Records${hasMoreDebts ? ` (Showing first 10 of ${data.debts.length})` : ''}</h3>
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Date</th>
                                     <th>Due Date</th>
-                                    <th>Total Amount</th>
-                                    <th>Paid Amount</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
                                     <th>Outstanding</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${data.debts.map(debt => `
+                                ${limitedDebts.map(debt => `
                                     <tr>
                                         <td>#${debt.id}</td>
                                         <td>${this.formatDate(debt.created_date)}</td>
@@ -1945,6 +1956,7 @@ class DebtManager {
                                 `).join('')}
                             </tbody>
                         </table>
+                        ${hasMoreDebts ? `<p class="note"><em>Note: Only first 10 debts shown for single-page print. View full report online for complete listing.</em></p>` : ''}
                     </div>
                     ` : '<p>No debts found for this customer.</p>'}
                     
@@ -1976,7 +1988,7 @@ class DebtManager {
                     
                     <div class="report-footer">
                         <p>Report generated on ${new Date().toLocaleString()}</p>
-                        <p>NurBuild Management System - Customer: ${data.customer?.name || 'Unknown'}</p>
+                        <p>${this.companyConfig.fullName} - Customer: ${data.customer?.name || 'Unknown'}</p>
                     </div>
                     
                     <div class="print-controls">
@@ -1996,12 +2008,16 @@ class DebtManager {
     
     // Render printable individual debt statement
     renderPrintableDebtStatement(debt, materialsData) {
+        // Limit materials to fit single page (max 15 materials)
+        const limitedMaterials = materialsData.materials ? materialsData.materials.slice(0, 15) : [];
+        const hasMoreMaterials = materialsData.materials && materialsData.materials.length > 15;
+        
         const reportHTML = `
-            <div class="print-report show" id="printableReport">
+            <div class="print-report show single-page" id="printableReport">
                 <div class="print-content">
                     <div class="company-header">
-                        <h1 class="company-name">NurBuild Management System</h1>
-                        <p class="company-subtitle">Building Materials & Construction Supplies</p>
+                        <h1 class="company-name">${this.companyConfig.fullName}</h1>
+                        <p class="company-subtitle">${this.companyConfig.subtitle}</p>
                         <h2 class="report-title">Debt Statement #${debt.id}</h2>
                         <p class="report-date">Generated on ${new Date().toLocaleDateString('en-US', { 
                             year: 'numeric', month: 'long', day: 'numeric' 
@@ -2044,21 +2060,21 @@ class DebtManager {
                         </div>
                     </div>
                     
-                    ${materialsData.materials && materialsData.materials.length > 0 ? `
+                    ${limitedMaterials.length > 0 ? `
                     <div class="materials-section">
-                        <h3 class="section-header">Materials Breakdown</h3>
+                        <h3 class="section-header">Materials Breakdown${hasMoreMaterials ? ` (Showing first 15 of ${materialsData.materials.length})` : ''}</h3>
                         <table>
                             <thead>
                                 <tr>
                                     <th>Material</th>
                                     <th>SKU</th>
-                                    <th>Quantity</th>
+                                    <th>Qty</th>
                                     <th>Unit Price</th>
-                                    <th>Total Value</th>
+                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${materialsData.materials.map(material => `
+                                ${limitedMaterials.map(material => `
                                     <tr>
                                         <td><strong>${material.material_name || 'N/A'}</strong></td>
                                         <td>${material.material_sku || 'N/A'}</td>
@@ -2069,12 +2085,13 @@ class DebtManager {
                                 `).join('')}
                             </tbody>
                         </table>
+                        ${hasMoreMaterials ? `<p class="note"><em>Note: Only first 15 materials shown for single-page print. View full report online for complete listing.</em></p>` : ''}
                     </div>
                     ` : ''}
                     
                     <div class="report-footer">
                         <p>Statement generated on ${new Date().toLocaleString()}</p>
-                        <p>NurBuild Management System - Debt #${debt.id}</p>
+                        <p>${this.companyConfig.fullName} - Debt #${debt.id}</p>
                         <p><strong>Note:</strong> This statement reflects the debt status as of the generation date.</p>
                     </div>
                     
