@@ -1,0 +1,452 @@
+[
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 1,
+    "fields": {
+      "name": "Cubic Meter",
+      "abbreviation": "m³",
+      "description": "Volume measurement for concrete, aggregates, etc.",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 2,
+    "fields": {
+      "name": "Liter",
+      "abbreviation": "L",
+      "description": "Volume measurement for liquids",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 3,
+    "fields": {
+      "name": "Square Meter",
+      "abbreviation": "m²",
+      "description": "Area measurement for sheets, tiles, etc.",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 4,
+    "fields": {
+      "name": "Meter",
+      "abbreviation": "m",
+      "description": "Linear measurement",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 5,
+    "fields": {
+      "name": "Kilogram",
+      "abbreviation": "kg",
+      "description": "Weight measurement",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 6,
+    "fields": {
+      "name": "Ton",
+      "abbreviation": "t",
+      "description": "Heavy weight measurement",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 7,
+    "fields": {
+      "name": "Piece",
+      "abbreviation": "pcs",
+      "description": "Individual items",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 8,
+    "fields": {
+      "name": "Sheet",
+      "abbreviation": "sheet",
+      "description": "Flat materials",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 9,
+    "fields": {
+      "name": "Bag",
+      "abbreviation": "bag",
+      "description": "Bagged materials",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 10,
+    "fields": {
+      "name": "Box",
+      "abbreviation": "box",
+      "description": "Boxed materials",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.unitofmeasure",
+    "pk": 11,
+    "fields": {
+      "name": "Roll",
+      "abbreviation": "roll",
+      "description": "Rolled materials",
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 1,
+    "fields": {
+      "name": "Structural Materials",
+      "description": "Load-bearing construction materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 2,
+    "fields": {
+      "name": "Roofing Materials",
+      "description": "Materials for roof construction and waterproofing",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 3,
+    "fields": {
+      "name": "Finishing Materials",
+      "description": "Interior and exterior finishing materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 4,
+    "fields": {
+      "name": "Electrical Materials",
+      "description": "Electrical installation materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 5,
+    "fields": {
+      "name": "Plumbing Materials",
+      "description": "Water supply and drainage materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 6,
+    "fields": {
+      "name": "Insulation & Waterproofing",
+      "description": "Thermal and moisture protection materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 7,
+    "fields": {
+      "name": "Site Preparation",
+      "description": "Excavation and foundation materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 8,
+    "fields": {
+      "name": "Hardware & Fasteners",
+      "description": "Joining and fastening materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 9,
+    "fields": {
+      "name": "Glass & Glazing",
+      "description": "Glass products and glazing materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 10,
+    "fields": {
+      "name": "Landscaping Materials",
+      "description": "Outdoor and landscaping materials",
+      "parent": null,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 11,
+    "fields": {
+      "name": "Concrete Products",
+      "description": "Ready-mix concrete, blocks, precast elements",
+      "parent": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 12,
+    "fields": {
+      "name": "Steel Products",
+      "description": "Structural steel, reinforcement, sheets",
+      "parent": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 13,
+    "fields": {
+      "name": "Wood & Lumber",
+      "description": "Timber, engineered wood, treated lumber",
+      "parent": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 14,
+    "fields": {
+      "name": "Masonry Materials",
+      "description": "Bricks, blocks, stones, mortar",
+      "parent": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 15,
+    "fields": {
+      "name": "Roofing Tiles",
+      "description": "Clay, concrete, and composite tiles",
+      "parent": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 16,
+    "fields": {
+      "name": "Metal Roofing",
+      "description": "Steel, aluminum, and copper roofing",
+      "parent": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 17,
+    "fields": {
+      "name": "Roofing Membranes",
+      "description": "Waterproof membranes and underlayments",
+      "parent": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 18,
+    "fields": {
+      "name": "Paints & Coatings",
+      "description": "Interior and exterior paints, primers, sealers",
+      "parent": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 19,
+    "fields": {
+      "name": "Flooring Materials",
+      "description": "Tiles, vinyl, laminate, hardwood",
+      "parent": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 20,
+    "fields": {
+      "name": "Doors & Windows",
+      "description": "Entry doors, windows, frames",
+      "parent": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 21,
+    "fields": {
+      "name": "Wiring & Cables",
+      "description": "Electrical cables, wires, conduits",
+      "parent": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 22,
+    "fields": {
+      "name": "Electrical Fixtures",
+      "description": "Switches, outlets, lighting fixtures",
+      "parent": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 23,
+    "fields": {
+      "name": "Electrical Panels",
+      "description": "Distribution panels, breakers, meters",
+      "parent": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 24,
+    "fields": {
+      "name": "Conduits & Fittings",
+      "description": "Electrical conduits and accessories",
+      "parent": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 25,
+    "fields": {
+      "name": "Pipes & Fittings",
+      "description": "Water supply and drainage pipes",
+      "parent": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 26,
+    "fields": {
+      "name": "Plumbing Fixtures",
+      "description": "Sinks, toilets, faucets, showers",
+      "parent": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 27,
+    "fields": {
+      "name": "Valves & Controls",
+      "description": "Shut-off valves, control valves",
+      "parent": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 28,
+    "fields": {
+      "name": "Thermal Insulation",
+      "description": "Fiberglass, foam, mineral wool insulation",
+      "parent": 6,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 29,
+    "fields": {
+      "name": "Waterproof Membranes",
+      "description": "Foundation and deck waterproofing",
+      "parent": 6,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 30,
+    "fields": {
+      "name": "Sealants & Caulks",
+      "description": "Joint sealers and caulking materials",
+      "parent": 6,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 31,
+    "fields": {
+      "name": "Aggregates",
+      "description": "Sand, gravel, crushed stone",
+      "parent": 7,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 32,
+    "fields": {
+      "name": "Screws & Bolts",
+      "description": "Various screws, bolts, and nuts",
+      "parent": 8,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 33,
+    "fields": {
+      "name": "Nails & Staples",
+      "description": "Construction nails and staples",
+      "parent": 8,
+      "is_active": true
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 34,
+    "fields": {
+      "name": "Construction Adhesives",
+      "description": "Structural and general adhesives",
+      "parent": 8,
+      "is_active": true
+    }
+  }
+]
