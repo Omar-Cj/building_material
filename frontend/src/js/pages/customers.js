@@ -90,20 +90,44 @@ class CustomerManager {
             console.log('Loading customers with params:', params.toString());
             const response = await apiClient.get(`/customers/customers/?${params.toString()}`);
             
-            // Handle DRF pagination response
-            if (response.results) {
-                this.customers = response.results;
-                this.totalCount = response.count || 0;
-                this.currentPage = page;
-                this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-                console.log('Loaded customers:', this.customers.length, 'Total:', this.totalCount);
+            // Handle DRF pagination response more robustly
+            if (response && typeof response === 'object') {
+                if (response.results && Array.isArray(response.results)) {
+                    // Paginated response from DRF
+                    this.customers = response.results;
+                    this.totalCount = response.count || 0;
+                    this.currentPage = page;
+                    this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+                    console.log('Loaded customers (paginated):', this.customers.length, 'Total:', this.totalCount, 'Page:', this.currentPage);
+                } else if (Array.isArray(response)) {
+                    // Direct array response (non-paginated)
+                    this.customers = response;
+                    this.totalCount = this.customers.length;
+                    this.currentPage = 1;
+                    this.totalPages = 1;
+                    console.log('Loaded customers (non-paginated array):', this.customers.length);
+                } else if (response.data && Array.isArray(response.data)) {
+                    // Response wrapped in data property
+                    this.customers = response.data;
+                    this.totalCount = this.customers.length;
+                    this.currentPage = 1;
+                    this.totalPages = 1;
+                    console.log('Loaded customers (wrapped in data):', this.customers.length);
+                } else {
+                    // Unknown response format
+                    console.warn('Unexpected response format:', response);
+                    this.customers = [];
+                    this.totalCount = 0;
+                    this.currentPage = 1;
+                    this.totalPages = 1;
+                }
             } else {
-                // Fallback for non-paginated response
-                this.customers = Array.isArray(response) ? response : [];
-                this.totalCount = this.customers.length;
+                // Invalid response
+                console.error('Invalid response received:', response);
+                this.customers = [];
+                this.totalCount = 0;
                 this.currentPage = 1;
                 this.totalPages = 1;
-                console.log('Loaded customers (non-paginated):', this.customers.length);
             }
             
             this.updatePaginationControls();

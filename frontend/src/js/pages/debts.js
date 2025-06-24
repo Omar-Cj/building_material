@@ -173,24 +173,59 @@ class DebtManager {
     async loadCustomers() {
         try {
             console.log('Loading customers for dropdowns...');
-            // Load customers without pagination for dropdowns - get all customers
-            const response = await apiClient.get('/customers/customers/?page_size=1000');
+            // Load ALL customers without pagination using the dedicated endpoint
+            const response = await apiClient.get('/customers/customers/all/');
             console.log('Customers response:', response);
             
-            // Handle both paginated and non-paginated responses
-            if (response.results) {
-                this.customers = response.results;
+            // Handle response from /all/ endpoint (should be direct array)
+            if (response && typeof response === 'object') {
+                if (Array.isArray(response)) {
+                    // Direct array response from /all/ endpoint (expected)
+                    this.customers = response;
+                    console.log('Loaded customers (direct array from /all/ endpoint):', this.customers.length);
+                } else if (response.data && Array.isArray(response.data)) {
+                    // Response wrapped in data property
+                    this.customers = response.data;
+                    console.log('Loaded customers (wrapped in data):', this.customers.length);
+                } else if (response.results && Array.isArray(response.results)) {
+                    // Paginated response (fallback, shouldn't happen with /all/ endpoint)
+                    this.customers = response.results;
+                    console.log('Loaded customers (paginated fallback):', this.customers.length);
+                } else {
+                    // Unknown response format
+                    console.warn('Unexpected response format for customers:', response);
+                    this.customers = [];
+                }
             } else {
-                this.customers = Array.isArray(response) ? response : [];
+                console.error('Invalid response received for customers:', response);
+                this.customers = [];
             }
             
-            console.log('Customers loaded for dropdowns:', this.customers.length);
+            console.log('Final customers array length:', this.customers.length);
+            
+            if (this.customers.length === 0) {
+                console.warn('No customers loaded - this may affect export functionality');
+                // Still populate dropdowns even if empty
+                this.populateCustomerDropdowns();
+                return;
+            }
+            
             this.populateCustomerDropdowns();
+            console.log('Customer dropdowns populated successfully');
         } catch (error) {
             console.error('Error loading customers:', error);
             this.customers = [];
-            // Don't show error for customer loading failure - let debts still work
-            console.warn('Customers failed to load, but debts module will continue to function');
+            this.populateCustomerDropdowns(); // Still try to populate even on error
+            
+            // Show more specific error message for debugging
+            if (error.response) {
+                console.error('Customer loading failed with status:', error.response.status);
+                console.error('Response data:', error.response.data);
+            } else if (error.request) {
+                console.error('No response received when loading customers');
+            } else {
+                console.error('Error setting up customer request:', error.message);
+            }
         }
     }
 
@@ -1180,29 +1215,57 @@ class DebtManager {
 
     async exportCustomerDebts() {
         try {
+            console.log('Starting customer debt export process...');
+            
             // Ensure data is loaded before opening modal
             if (!this.customers || this.customers.length === 0) {
-                this.showError('Loading customer data, please wait...');
-                await this.loadCustomers();
+                console.log('Customers not loaded, loading now...');
+                this.showInfo('Loading customer data, please wait...');
+                
+                try {
+                    await this.loadCustomers();
+                    console.log('Customers loaded successfully, count:', this.customers.length);
+                } catch (customerError) {
+                    console.error('Failed to load customers:', customerError);
+                    this.showError('Failed to load customer data. Please try refreshing the page.');
+                    return;
+                }
+                
+                // Double-check customers were loaded
+                if (!this.customers || this.customers.length === 0) {
+                    this.showError('No customers found in the system. Please add customers first.');
+                    return;
+                }
             }
             
             if (!this.debts || this.debts.length === 0) {
-                this.showError('Loading debt data, please wait...');
-                await this.loadDebts();
+                console.log('Debts not loaded, loading now...');
+                this.showInfo('Loading debt data, please wait...');
+                
+                try {
+                    await this.loadDebts();
+                    console.log('Debts loaded successfully, count:', this.debts.length);
+                } catch (debtError) {
+                    console.error('Failed to load debts:', debtError);
+                    this.showWarning('Failed to load debt data, but you can still export customer reports.');
+                }
             }
+            
+            console.log('Opening customer export modal with', this.customers.length, 'customers and', this.debts.length, 'debts');
             
             // Create customer selection modal
             this.showCustomerExportModal();
         } catch (error) {
             console.error('Error opening customer export modal:', error);
-            this.showError('Failed to open customer export dialog.');
+            this.showError(`Failed to open customer export dialog: ${error.message}`);
         }
     }
 
     showCustomerExportModal() {
         // Check if customers are loaded
         if (!this.customers || this.customers.length === 0) {
-            this.showError('Customer data is not loaded yet. Please wait a moment and try again.');
+            console.error('showCustomerExportModal called but no customers available');
+            this.showError('No customers available for export. Please ensure customers are loaded and try again.');
             return;
         }
         
@@ -1288,9 +1351,16 @@ class DebtManager {
         const exportBtn = document.getElementById('exportCustomerReportBtn');
         
         console.log('Customer selection changed:', customerId);
-        console.log('Available customers:', this.customers.length);
-        console.log('Available debts:', this.debts.length);
+        console.log('Available customers:', this.customers ? this.customers.length : 'null/undefined');
+        console.log('Available debts:', this.debts ? this.debts.length : 'null/undefined');
         console.log('Export button found:', !!exportBtn);
+        
+        // Validate customers array
+        if (!this.customers || !Array.isArray(this.customers)) {
+            console.error('Customers array is not properly initialized:', this.customers);
+            this.showError('Customer data is not properly loaded. Please refresh the page and try again.');
+            return;
+        }
         
         if (!customerId) {
             if (customerDebtInfo) customerDebtInfo.style.display = 'none';

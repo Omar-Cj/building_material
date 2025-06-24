@@ -26,7 +26,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     filterset_fields = ['status', 'customer_type', 'city', 'country']
     search_fields = ['name', 'contact_person', 'email', 'phone']
     ordering_fields = ['name', 'registration_date', 'outstanding_balance']
-    pagination_class = None  # Disable pagination for frontend client-side pagination
+    # Use default pagination from REST_FRAMEWORK settings (PAGE_SIZE=6)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -83,6 +83,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
         """Get all payments for a customer."""
         payments = CustomerPayment.objects.filter(customer_id=pk)
         serializer = CustomerPaymentSerializer(payments, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def all(self, request):
+        """Get all customers without pagination for dropdowns and exports."""
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 

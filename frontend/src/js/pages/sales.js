@@ -57,7 +57,7 @@ class SalesManager {
         try {
             const [salesData, customersData, materialsData] = await Promise.all([
                 apiClient.get('/sales/orders/'),
-                apiClient.get('/customers/customers/'),
+                apiClient.get('/customers/customers/all/'),
                 apiClient.get('/inventory/materials/')
             ]);
 

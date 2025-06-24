@@ -483,6 +483,9 @@ class DebtViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def export_customer(self, request):
         """Export all debts for a specific customer as JSON data for printing."""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
             # Check authentication
             if not request.user.is_authenticated:
@@ -498,10 +501,13 @@ class DebtViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            logger.info(f"Exporting customer data for customer_id: {customer_id}")
+            
             # Get customer and their debts
             from customers.models import Customer
             try:
                 customer = Customer.objects.get(id=customer_id)
+                logger.info(f"Found customer: {customer.name}")
             except Customer.DoesNotExist:
                 return Response(
                     {'error': 'Customer not found'},
@@ -509,17 +515,26 @@ class DebtViewSet(viewsets.ModelViewSet):
                 )
             
             debts = self.get_queryset().filter(customer=customer).select_related('sale').prefetch_related('sale__items__material', 'payments')
+            logger.info(f"Found {debts.count()} debts for customer")
             
-            # Prepare customer information
-            customer_info = {
-                'id': customer.id,
-                'name': customer.name,
-                'phone': customer.phone,
-                'email': customer.email or 'N/A',
-                'customer_type': customer.get_customer_type_display(),
-                'credit_limit': float(customer.credit_limit or 0),
-                'outstanding_balance': float(customer.outstanding_balance or 0)
-            }
+            # Prepare customer information with safe field access
+            try:
+                customer_info = {
+                    'id': customer.id,
+                    'name': getattr(customer, 'name', 'N/A'),
+                    'phone': getattr(customer, 'phone', 'N/A'),
+                    'email': getattr(customer, 'email', None) or 'N/A',
+                    'customer_type': getattr(customer, 'get_customer_type_display', lambda: 'N/A')(),
+                    'credit_limit': float(getattr(customer, 'credit_limit', 0) or 0),
+                    'outstanding_balance': float(getattr(customer, 'outstanding_balance', 0) or 0)
+                }
+                logger.info("Customer info prepared successfully")
+            except Exception as e:
+                logger.error(f"Error preparing customer info: {str(e)}")
+                return Response(
+                    {'error': f'Error preparing customer information: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             
             # Prepare debt summary
             debt_summary = {
@@ -533,71 +548,130 @@ class DebtViewSet(viewsets.ModelViewSet):
             debt_records = []
             materials_dict = {}
             
-            for debt in debts:
-                debt_summary['total_amount'] += float(debt.total_amount)
-                debt_summary['total_paid'] += float(debt.paid_amount)
-                debt_summary['total_outstanding'] += float(debt.remaining_amount)
-                
-                # Prepare payment history for this debt
-                payments = []
-                for payment in debt.payments.all():
-                    payments.append({
-                        'id': payment.id,
-                        'amount': float(payment.amount),
-                        'payment_method': payment.payment_method,
-                        'date': payment.created_at.strftime('%Y-%m-%d'),
-                        'notes': payment.notes or ''
-                    })
-                
-                # Add debt record
-                debt_records.append({
-                    'id': debt.id,
-                    'created_date': debt.created_at.strftime('%Y-%m-%d'),
-                    'due_date': debt.due_date.strftime('%Y-%m-%d'),
-                    'total_amount': float(debt.total_amount),
-                    'paid_amount': float(debt.paid_amount),
-                    'remaining_amount': float(debt.remaining_amount),
-                    'status': debt.get_status_display(),
-                    'notes': debt.notes or '',
-                    'payments': payments
-                })
-                
-                # Process materials for this debt
-                if debt.sale and debt.sale.items.exists():
-                    for item in debt.sale.items.all():
-                        material_name = item.material.name
-                        if material_name not in materials_dict:
-                            materials_dict[material_name] = {
-                                'sku': item.material.sku,
-                                'quantity': 0,
-                                'total_value': 0
-                            }
-                        materials_dict[material_name]['quantity'] += float(item.quantity)
-                        materials_dict[material_name]['total_value'] += float(item.quantity * item.price)
+            try:
+                for debt in debts:
+                    logger.info(f"Processing debt {debt.id}")
+                    
+                    # Safe access to debt amounts
+                    try:
+                        total_amount = float(getattr(debt, 'total_amount', 0) or 0)
+                        paid_amount = float(getattr(debt, 'paid_amount', 0) or 0)
+                        remaining_amount = float(getattr(debt, 'remaining_amount', 0) or 0)
+                        
+                        debt_summary['total_amount'] += total_amount
+                        debt_summary['total_paid'] += paid_amount
+                        debt_summary['total_outstanding'] += remaining_amount
+                    except Exception as e:
+                        logger.error(f"Error calculating debt amounts for debt {debt.id}: {str(e)}")
+                        continue
+                    
+                    # Prepare payment history for this debt
+                    payments = []
+                    try:
+                        for payment in debt.payments.all():
+                            try:
+                                payment_data = {
+                                    'id': payment.id,
+                                    'amount': float(getattr(payment, 'amount', 0) or 0),
+                                    'payment_method': getattr(payment, 'payment_method', 'N/A'),
+                                    'date': getattr(payment, 'created_at', timezone.now()).strftime('%Y-%m-%d') if hasattr(payment, 'created_at') else 'N/A',
+                                    'notes': getattr(payment, 'notes', '') or ''
+                                }
+                                payments.append(payment_data)
+                            except Exception as e:
+                                logger.error(f"Error processing payment {payment.id}: {str(e)}")
+                                continue
+                    except Exception as e:
+                        logger.error(f"Error accessing payments for debt {debt.id}: {str(e)}")
+                    
+                    # Add debt record with safe field access
+                    try:
+                        debt_record = {
+                            'id': debt.id,
+                            'created_date': getattr(debt, 'created_at', timezone.now()).strftime('%Y-%m-%d') if hasattr(debt, 'created_at') else 'N/A',
+                            'due_date': getattr(debt, 'due_date', timezone.now().date()).strftime('%Y-%m-%d') if hasattr(debt, 'due_date') else 'N/A',
+                            'total_amount': total_amount,
+                            'paid_amount': paid_amount,
+                            'remaining_amount': remaining_amount,
+                            'status': getattr(debt, 'get_status_display', lambda: 'N/A')(),
+                            'notes': getattr(debt, 'notes', '') or '',
+                            'payments': payments
+                        }
+                        debt_records.append(debt_record)
+                    except Exception as e:
+                        logger.error(f"Error creating debt record for debt {debt.id}: {str(e)}")
+                        continue
+                    
+                    # Process materials for this debt
+                    try:
+                        if hasattr(debt, 'sale') and debt.sale and hasattr(debt.sale, 'items') and debt.sale.items.exists():
+                            for item in debt.sale.items.all():
+                                try:
+                                    if hasattr(item, 'material') and item.material:
+                                        material_name = getattr(item.material, 'name', 'Unknown Material')
+                                        material_sku = getattr(item.material, 'sku', 'N/A')
+                                        item_quantity = float(getattr(item, 'quantity', 0) or 0)
+                                        item_price = float(getattr(item, 'price', 0) or 0)
+                                        
+                                        if material_name not in materials_dict:
+                                            materials_dict[material_name] = {
+                                                'sku': material_sku,
+                                                'quantity': 0,
+                                                'total_value': 0
+                                            }
+                                        materials_dict[material_name]['quantity'] += item_quantity
+                                        materials_dict[material_name]['total_value'] += (item_quantity * item_price)
+                                except Exception as e:
+                                    logger.error(f"Error processing material item for debt {debt.id}: {str(e)}")
+                                    continue
+                    except Exception as e:
+                        logger.error(f"Error accessing sale items for debt {debt.id}: {str(e)}")
+                        
+            except Exception as e:
+                logger.error(f"Error processing debts: {str(e)}")
+                return Response(
+                    {'error': f'Error processing debt data: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             
             # Convert materials dict to list
             materials_summary = []
-            for material_name, data in materials_dict.items():
-                materials_summary.append({
-                    'name': material_name,
-                    'sku': data['sku'],
-                    'quantity': data['quantity'],
-                    'total_value': data['total_value']
-                })
+            try:
+                for material_name, data in materials_dict.items():
+                    materials_summary.append({
+                        'name': material_name,
+                        'sku': data['sku'],
+                        'quantity': data['quantity'],
+                        'total_value': data['total_value']
+                    })
+                logger.info(f"Materials summary prepared: {len(materials_summary)} materials")
+            except Exception as e:
+                logger.error(f"Error preparing materials summary: {str(e)}")
+                materials_summary = []
             
             # Prepare response data
-            export_data = {
-                'report_type': 'customer_debt_report',
-                'generated_date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'customer': customer_info,
-                'summary': debt_summary,
-                'debts': debt_records,
-                'materials': materials_summary
-            }
-            
-            return Response(export_data, status=status.HTTP_200_OK)
+            try:
+                export_data = {
+                    'report_type': 'customer_debt_report',
+                    'generated_date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'customer': customer_info,
+                    'summary': debt_summary,
+                    'debts': debt_records,
+                    'materials': materials_summary
+                }
+                
+                logger.info(f"Export data prepared successfully for customer {customer_id}")
+                return Response(export_data, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                logger.error(f"Error preparing final export data: {str(e)}")
+                return Response(
+                    {'error': f'Error preparing export data: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             
         except Exception as e:
+            logger.error(f"Unexpected error in export_customer: {str(e)}")
             return Response(
                 {'error': f'Export failed: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
