@@ -40,11 +40,6 @@ class Customer(models.Model):
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20)
     alternative_phone = models.CharField(max_length=20, blank=True, null=True)
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100)
     tax_id = models.CharField(max_length=50, blank=True, null=True)
     
     # Financial information

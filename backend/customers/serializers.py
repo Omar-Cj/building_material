@@ -48,8 +48,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['id', 'name', 'customer_type', 'contact_person', 'email', 
-                  'phone', 'alternative_phone', 'address', 'city', 'state', 
-                  'postal_code', 'country', 'tax_id', 'credit_limit', 
+                  'phone', 'alternative_phone', 'tax_id', 'credit_limit', 
                   'outstanding_balance', 'payment_terms', 'allow_debt', 'current_debt', 
                   'debt_limit', 'debt_status', 'status', 'registration_date', 'notes', 
                   'created_at', 'updated_at', 'created_by', 'updated_by', 'user_account']

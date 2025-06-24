@@ -23,7 +23,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status', 'customer_type', 'city', 'country']
+    filterset_fields = ['status', 'customer_type']
     search_fields = ['name', 'contact_person', 'email', 'phone']
     ordering_fields = ['name', 'registration_date', 'outstanding_balance']
     # Use default pagination from REST_FRAMEWORK settings (PAGE_SIZE=6)

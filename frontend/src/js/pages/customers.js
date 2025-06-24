@@ -175,7 +175,7 @@ class CustomerManager {
                         <th>Name</th>
                         <th>Type</th>
                         <th>Contact</th>
-                        <th>City</th>
+                        <th>Location</th>
                         <th>Status</th>
                         <th>Credit Limit</th>
                         <th>Actions</th>
@@ -202,7 +202,7 @@ class CustomerManager {
                                     ${customer.email ? `<div><i class="fas fa-envelope"></i> ${this.escapeHtml(customer.email)}</div>` : ''}
                                 </div>
                             </td>
-                            <td>${this.escapeHtml(customer.city)}, ${this.escapeHtml(customer.state)}</td>
+                            <td>-</td>
                             <td><span class="status-badge status-${customer.status}">${this.formatStatus(customer.status)}</span></td>
                             <td>₦${this.formatMoney(customer.credit_limit || 0)}</td>
                             <td class="actions-cell">
@@ -258,7 +258,6 @@ class CustomerManager {
             this.populateForm(customer);
         } else {
             document.getElementById('customerForm').reset();
-            document.getElementById('country').value = 'Nigeria';
             document.getElementById('status').value = 'active';
         }
         
@@ -277,8 +276,7 @@ class CustomerManager {
 
     populateForm(customer) {
         const fields = ['customerName', 'customerType', 'contactPerson', 'email', 'phone', 
-                       'alternativePhone', 'address', 'city', 'state', 'postalCode', 'country', 
-                       'taxId', 'creditLimit', 'paymentTerms', 'status', 'notes'];
+                       'alternativePhone', 'taxId', 'creditLimit', 'paymentTerms', 'status', 'notes'];
         
         fields.forEach(field => {
             const element = document.getElementById(field);
@@ -328,11 +326,6 @@ class CustomerManager {
             email: document.getElementById('email').value.trim() || null,
             phone: document.getElementById('phone').value.trim(),
             alternative_phone: document.getElementById('alternativePhone').value.trim() || null,
-            address: document.getElementById('address').value.trim(),
-            city: document.getElementById('city').value.trim(),
-            state: document.getElementById('state').value.trim(),
-            postal_code: document.getElementById('postalCode').value.trim() || null,
-            country: document.getElementById('country').value.trim(),
             tax_id: document.getElementById('taxId').value.trim() || null,
             credit_limit: parseFloat(document.getElementById('creditLimit').value) || 0,
             payment_terms: document.getElementById('paymentTerms').value.trim() || null,
